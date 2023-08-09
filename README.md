@@ -1,3 +1,11 @@
+<p align='center'>
+<a href="https://github.com/eclipse-xpanse/terraform-boot/actions/workflows/ci.yml" target="_blank">
+    <img src="https://github.com/eclipse-xpanse/terraform-boot/actions/workflows/ci.yml/badge.svg" alt="build">
+</a>
+<a href="https://opensource.org/licenses/Apache-2.0" target="_blank">
+    <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="coverage">
+  </a>
+</p>
 # terraform-boot
 
 A spring-boot-based project which aims to provide a RESTful API for Terraform CLI.
@@ -44,5 +52,5 @@ The below property names can be changed in the following ways
 |---------------------------------|---------------------------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | terraform_binary_path           | TERRAFORM_BINARY_PATH           | Terraform available on syspath                   | The path to the terraform binary                                                                                      |
 | terraform.root.module.directory | TERRAFORM.ROOT.MODULE.DIRECTORY | /tmp on Linux<br/>\AppData\Local\Temp on Windows | The path to the parent directory where all terraform module directories will be stored at as subdirs                  |
-| log.terraform.stdout.stderr     | lLOG_TERRAFORM_STDOUT_STDERR    | true                                             | Controls if the command execution output must be logged. If disabled, the output is only returned in the API response |
+| log.terraform.stdout.stderr     | LOG_TERRAFORM_STDOUT_STDERR     | true                                             | Controls if the command execution output must be logged. If disabled, the output is only returned in the API response |
 | terraform.log.level             | TERRAFORM_LOG_LEVEL             | INFO                                             | Controls the log level of the terraform binary. Allowed values are INFO, DEBUG, TRACE, WARN and ERROR                 |                                                                                                                       |
