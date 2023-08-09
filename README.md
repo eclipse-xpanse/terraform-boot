@@ -6,6 +6,7 @@
     <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="coverage">
   </a>
 </p>
+
 # terraform-boot
 
 A spring-boot-based project which aims to provide a RESTful API for Terraform CLI.
