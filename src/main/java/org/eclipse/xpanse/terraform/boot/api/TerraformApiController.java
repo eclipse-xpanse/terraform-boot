@@ -109,7 +109,6 @@ public class TerraformApiController {
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
             @Valid @RequestBody TerraformDestroyRequest terraformDestroyRequest) {
-        return this.terraformExecutor.destroy(terraformDestroyRequest.getVariables(),
-                moduleDirectory);
+        return this.terraformExecutor.destroy(terraformDestroyRequest, moduleDirectory);
     }
 }

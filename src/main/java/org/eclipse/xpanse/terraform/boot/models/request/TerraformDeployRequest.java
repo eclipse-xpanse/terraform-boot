@@ -7,6 +7,7 @@ package org.eclipse.xpanse.terraform.boot.models.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 
@@ -23,6 +24,12 @@ public class TerraformDeployRequest {
 
     @NotNull
     @Schema(description = "Key-value pairs of variables that must be used to execute the "
-            + "Terraform request.")
-    Map<String, String> variables;
+            + "Terraform request.",
+            additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
+    Map<String, Object> variables;
+
+    @Schema(description = "Key-value pairs of variables that must be injected as environment "
+            + "variables to terraform process.",
+            additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
+    Map<String, String> envVariables = new HashMap<>();
 }
