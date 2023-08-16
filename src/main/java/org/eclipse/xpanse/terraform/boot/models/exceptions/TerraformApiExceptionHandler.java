@@ -3,14 +3,12 @@
  * SPDX-FileCopyrightText: Huawei Inc.
  */
 
-package org.eclipse.xpanse.terraform.boot.api.exceptions;
+package org.eclipse.xpanse.terraform.boot.models.exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
-import org.eclipse.xpanse.terraform.boot.models.exceptions.UnsupportedEnumValueException;
 import org.eclipse.xpanse.terraform.boot.models.response.Response;
 import org.eclipse.xpanse.terraform.boot.models.response.ResultType;
 import org.springframework.http.HttpStatus;
