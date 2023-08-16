@@ -14,6 +14,8 @@ import org.eclipse.xpanse.terraform.boot.models.SystemStatus;
 import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDestroyRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
@@ -100,7 +102,7 @@ public class TerraformApiController {
      * @return Returns the status of the resources destroy.
      */
     @Tag(name = "Terraform", description = "APIs for running Terraform commands")
-    @Operation(description = "Validate the Terraform modules")
+    @Operation(description = "Destroy the Terraform modules")
     @DeleteMapping(value = "/destroy/{module_directory}",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -110,5 +112,39 @@ public class TerraformApiController {
             @PathVariable("module_directory") String moduleDirectory,
             @Valid @RequestBody TerraformDestroyRequest terraformDestroyRequest) {
         return this.terraformExecutor.destroy(terraformDestroyRequest, moduleDirectory);
+    }
+
+    /**
+     * Method to async deploy resources requested in a workspace.
+     *
+     */
+    @Tag(name = "Terraform", description = "APIs for running Terraform commands")
+    @Operation(description = "async deploy resources via Terraform")
+    @PostMapping(value = "/deploy/async/{module_directory}", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void asyncDeploy(
+            @Parameter(name = "module_directory",
+                    description = "directory name where the Terraform module files exist.")
+            @PathVariable("module_directory") String moduleDirectory,
+            @Valid @RequestBody TerraformAsyncDeployRequest asyncDeployRequest) {
+        terraformExecutor.asyncDeploy(asyncDeployRequest, moduleDirectory);
+    }
+
+    /**
+     * Method to async destroy resources requested in a workspace.
+     *
+     */
+    @Tag(name = "Terraform", description = "APIs for running Terraform commands")
+    @Operation(description = "Async destroy the Terraform modules")
+    @DeleteMapping(value = "/destroy/async/{module_directory}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void asyncDestroy(
+            @Parameter(name = "module_directory",
+                    description = "directory name where the Terraform module files exist.")
+            @PathVariable("module_directory") String moduleDirectory,
+            @Valid @RequestBody TerraformAsyncDestroyRequest asyncDestroyRequest) {
+        terraformExecutor.asyncDestroy(asyncDestroyRequest, moduleDirectory);
     }
 }

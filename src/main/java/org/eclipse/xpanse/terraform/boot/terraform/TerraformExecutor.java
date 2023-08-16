@@ -21,13 +21,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDestroyRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.utils.SystemCmd;
 import org.eclipse.xpanse.terraform.boot.terraform.utils.SystemCmdResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * An executor for terraform.
@@ -47,6 +51,8 @@ public class TerraformExecutor {
 
     private final SystemCmd systemCmd;
 
+    private final RestTemplate restTemplate;
+
     private final boolean isStdoutStdErrLoggingEnabled;
 
     private final String customTerraformBinary;
@@ -63,7 +69,7 @@ public class TerraformExecutor {
      * @param terraformLogLevel            value of `terraform.log.level` property
      */
     @Autowired
-    public TerraformExecutor(SystemCmd systemCmd,
+    public TerraformExecutor(SystemCmd systemCmd, RestTemplate restTemplate,
                              @Value("${terraform.root.module.directory}")
                              String moduleParentDirectoryPath,
                              @Value("${log.terraform.stdout.stderr:true}")
@@ -80,6 +86,7 @@ public class TerraformExecutor {
             this.moduleParentDirectoryPath = moduleParentDirectoryPath;
         }
         this.systemCmd = systemCmd;
+        this.restTemplate = restTemplate;
         this.customTerraformBinary = customTerraformBinary;
         this.isStdoutStdErrLoggingEnabled = isStdoutStdErrLoggingEnabled;
         this.terraformLogLevel = terraformLogLevel;
@@ -165,30 +172,25 @@ public class TerraformExecutor {
      * Deploy a source by terraform.
      */
     public TerraformResult deploy(TerraformDeployRequest terraformDeployRequest, String workspace) {
+        SystemCmdResult result;
         if (Boolean.TRUE.equals(terraformDeployRequest.getIsPlanOnly())) {
-            SystemCmdResult tfPlanResult =
-                    tfPlan(terraformDeployRequest.getVariables(),
-                            terraformDeployRequest.getEnvVariables(), workspace);
-            return TerraformResult.builder()
-                    .commandStdOutput(tfPlanResult.getCommandStdOutput())
-                    .commandStdError(tfPlanResult.getCommandStdError())
-                    .isCommandSuccessful(tfPlanResult.isCommandSuccessful())
-                    .build();
+            result = tfPlan(terraformDeployRequest.getVariables(),
+                    terraformDeployRequest.getEnvVariables(), workspace);
         } else {
-            SystemCmdResult applyResult = tfApplyCommand(terraformDeployRequest.getVariables(),
+            result = tfApplyCommand(terraformDeployRequest.getVariables(),
                     terraformDeployRequest.getEnvVariables(),
                     getModuleFullPath(workspace));
-            if (!applyResult.isCommandSuccessful()) {
+            if (!result.isCommandSuccessful()) {
                 log.error("TFExecutor.tfApply failed.");
                 throw new TerraformExecutorException("TFExecutor.tfApply failed.",
-                        applyResult.getCommandStdError());
+                        result.getCommandStdError());
             }
-            return TerraformResult.builder()
-                    .commandStdOutput(applyResult.getCommandStdOutput())
-                    .commandStdError(applyResult.getCommandStdError())
-                    .isCommandSuccessful(applyResult.isCommandSuccessful())
-                    .build();
         }
+        return TerraformResult.builder()
+                .commandStdOutput(result.getCommandStdOutput())
+                .commandStdError(result.getCommandStdError())
+                .isCommandSuccessful(result.isCommandSuccessful())
+                .build();
     }
 
     /**
@@ -211,6 +213,27 @@ public class TerraformExecutor {
                 .commandStdError(destroyResult.getCommandStdError())
                 .isCommandSuccessful(destroyResult.isCommandSuccessful())
                 .build();
+    }
+
+    /**
+     * Async deploy a source by terraform.
+     */
+    @Async("taskExecutor")
+    public void asyncDeploy(TerraformAsyncDeployRequest asyncDeployRequest,
+            String workspace) {
+        TerraformResult result = deploy(asyncDeployRequest, workspace);
+        log.info("Deployment service complete, {}", result.getCommandStdOutput());
+        restTemplate.postForLocation(asyncDeployRequest.getWebhookConfig().getUrl(), result);
+    }
+
+    /**
+     * Async destroy resource of the service.
+     */
+    @Async("taskExecutor")
+    public void asyncDestroy(TerraformAsyncDestroyRequest asyncDestroyRequest, String workspace) {
+        TerraformResult result = destroy(asyncDestroyRequest, workspace);
+        log.info("Destroy service complete, {}", result.getCommandStdOutput());
+        restTemplate.postForLocation(asyncDestroyRequest.getWebhookConfig().getUrl(), result);
     }
 
     /**
