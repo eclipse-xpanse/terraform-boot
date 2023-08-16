@@ -74,7 +74,7 @@ jobs:
         run: mvn versions:set -DremoveSnapshot -DgenerateBackupPoms=false
 
       - name: Build
-        run: mvn clean deploy -PreleaseBuild -DskipTests
+        run: mvn clean install -DskipTests
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
