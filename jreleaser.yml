@@ -1,0 +1,21 @@
+project:
+  name: eclipse-terraform-boot
+  license: Apache-2.0
+  links:
+    homepage: https://eclipse-xpanse.github.io/xpanse-website/
+    documentation: https://eclipse-xpanse.github.io/xpanse-website/docs/intro
+    contribute: https://eclipse-xpanse.github.io/xpanse-website/docs/Contribute/new-developers
+  icons:
+    - url: https://github.com/eclipse-xpanse/xpanse/blob/main/static/full-logo.png
+      primary: true
+      width: 250
+      height: 250
+  java:
+    version: "17"
+    groupId: "org.eclipse.xpanse"
+release:
+  github:
+    overwrite: true
+signing:
+  active: ALWAYS
+  armored: true
