@@ -1,0 +1,149 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Huawei Inc.
+#
+---
+name: terraform-boot-cd
+
+on:
+  workflow_dispatch:
+    inputs:
+      ReleaseType:
+        type: choice
+        description: Select the next development version
+        options:
+          - Major Version
+          - Minor Version
+          - Patch Version
+
+env:
+  BOT_USER_NAME: eclipse-terraform-boot-bot
+  BOT_EMAIL_ID: terraform-boot-bot@eclipse.org
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.repository == 'eclipse-xpanse/terraform-boot'
+    outputs:
+      next-version: ${{ steps.new_version.outputs.next-version }}
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.BOT_GITHUB_TOKEN }}
+
+      - name: Set Up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'temurin'
+          server-username: ${{ secrets.ORG_OSSRH_USERNAME }}
+          server-password: ${{ secrets.ORG_OSSRH_PASSWORD }}
+          server-id: maven
+
+      - name: Set current version env variable
+        run: |
+          echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | sed s/-SNAPSHOT/""/g)" >> $GITHUB_ENV
+
+      - name: Map input to next action
+        run: |
+          if [ "${{github.event.inputs.ReleaseType}}" = "Major Version" ]; then
+            echo "VERSION_FRAGMENT=major" >> $GITHUB_ENV
+          elif [ "${{github.event.inputs.ReleaseType}}" = "Minor Version" ]; then
+            echo "VERSION_FRAGMENT=feature" >> $GITHUB_ENV
+          elif [ "${{github.event.inputs.ReleaseType}}" = "Patch Version" ]; then
+            echo "VERSION_FRAGMENT=bug" >> $GITHUB_ENV
+          else
+            echo "No matching feature type  found"
+          fi
+
+      - name: Set next development version environment variable
+        id: new_version
+        uses: christian-draeger/increment-semantic-version@1.1.0
+        with:
+          current-version: ${{ env.CURRENT_VERSION }}
+          version-fragment: ${{ env.VERSION_FRAGMENT }}
+
+      - name: Remove SNAPSHOT from POM version
+        run: mvn versions:set -DremoveSnapshot -DgenerateBackupPoms=false
+
+      - name: Build
+        run: mvn clean deploy -PreleaseBuild -DskipTests
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Github Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ env.BOT_USER_NAME }}
+          password: ${{ secrets.BOT_GITHUB_DOCKER_TOKEN }}
+
+      - name: Build Docker Image and Push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.CURRENT_VERSION }}
+          labels: latest, ${{ env.CURRENT_VERSION }}
+
+      - name: Push POM updates with release version
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "[GitHub Action] Update release version"
+          author_name: ${{ env.BOT_USER_NAME }}
+          committer_name: ${{ env.BOT_USER_NAME }}
+          author_email: ${{ env.BOT_EMAIL_ID }}
+          committer_email: ${{ env.BOT_EMAIL_ID }}
+
+      - name: Release new version on GitHub
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_PROJECT_VERSION: ${{ env.CURRENT_VERSION }}
+        uses: jreleaser/release-action@v2
+        with:
+          arguments: release
+
+      - name: Upload JReleaser release output
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: jreleaser-release
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties
+
+  prepare-for-next-development-cycle:
+    runs-on: ubuntu-latest
+    if: github.repository == 'eclipse-xpanse/terraform-boot'
+    needs: release
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.BOT_GITHUB_TOKEN }}
+
+      - name: Update next development version in POMs
+        run: mvn versions:set -DnewVersion=${{ needs.release.outputs.next-version }}-SNAPSHOT -DgenerateBackupPoms=false
+
+      - name: Push POM updates for next development cycle
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "[GitHub Action] Prepare for next development cycle"
+          author_name: ${{ env.BOT_USER_NAME }}
+          committer_name: ${{ env.BOT_USER_NAME }}
+          author_email: ${{ env.BOT_EMAIL_ID }}
+          committer_email: ${{ env.BOT_EMAIL_ID }}
