@@ -10,15 +10,20 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.xpanse.terraform.boot.models.SystemStatus;
+import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
+import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformHealthCheckException;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployRequest;
@@ -41,6 +46,13 @@ import org.springframework.web.client.RestTemplate;
 public class TerraformExecutor {
     private static final String VARS_FILE_NAME = "variables.tfvars.json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String TEST_FILE_NAME = "hello-world.tf";
+    private static final String HEALTH_CHECK_DIR = UUID.randomUUID().toString();
+    private static final String HELLO_WORLD_TEMPLATE = """
+            output "hello_world" {
+                value = "Hello, World!"
+            }
+            """;
 
     static {
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -252,6 +264,37 @@ public class TerraformExecutor {
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Serialising string to object failed.", ex);
         }
+    }
+
+    /**
+     * Perform Terraform health checks by creating a Terraform test configuration file.
+     *
+     * @return SystemStatus.
+     */
+    public SystemStatus tfHealthCheck() {
+        String filePath = getModuleFullPath(HEALTH_CHECK_DIR) + File.separator
+                + TEST_FILE_NAME;
+        try {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            FileWriter writer = new FileWriter(filePath);
+            writer.write(HELLO_WORLD_TEMPLATE);
+            writer.close();
+        } catch (IOException e) {
+            throw new TerraformHealthCheckException(
+                    "Error creating or writing to file '" + filePath + "': " + e.getMessage());
+        }
+        TerraformValidationResult terraformValidationResult = tfValidate(HEALTH_CHECK_DIR);
+        SystemStatus systemStatus = new SystemStatus();
+        if (terraformValidationResult.isValid()) {
+            systemStatus.setHealthStatus(HealthStatus.OK);
+            return systemStatus;
+        }
+        systemStatus.setHealthStatus(HealthStatus.NOK);
+        return systemStatus;
     }
 
     private String getModuleFullPath(String moduleDirectory) {
