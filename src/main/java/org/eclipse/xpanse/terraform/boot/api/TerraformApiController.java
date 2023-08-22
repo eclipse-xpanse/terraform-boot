@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.models.SystemStatus;
-import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployRequest;
@@ -58,9 +57,7 @@ public class TerraformApiController {
     @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public SystemStatus healthCheck() {
-        SystemStatus systemStatus = new SystemStatus();
-        systemStatus.setHealthStatus(HealthStatus.OK);
-        return systemStatus;
+        return this.terraformExecutor.tfHealthCheck();
     }
 
     /**

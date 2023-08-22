@@ -92,4 +92,16 @@ public class TerraformApiExceptionHandler {
         return Response.errorResponse(ResultType.BAD_PARAMETERS,
                 Collections.singletonList(failMessage));
     }
+
+    /**
+     * Exception handler for TerraformHealthCheckException.
+     */
+    @ExceptionHandler({TerraformHealthCheckException.class})
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public Response handleTerraformHealthCheckException(TerraformHealthCheckException ex) {
+        log.error("TerraformHealthCheckException: ", ex);
+        String failMessage = ex.getMessage();
+        return Response.errorResponse(ResultType.SERVICE_UNAVAILABLE,
+                Collections.singletonList(failMessage));
+    }
 }
