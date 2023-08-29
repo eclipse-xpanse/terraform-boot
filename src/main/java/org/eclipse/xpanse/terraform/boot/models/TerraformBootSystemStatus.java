@@ -14,7 +14,7 @@ import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
  * Describes health status of the system.
  */
 @Data
-public class SystemStatus {
+public class TerraformBootSystemStatus {
 
     @NotNull
     @Schema(description = "The health status of Xpanse api service.")
