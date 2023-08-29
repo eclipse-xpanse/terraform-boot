@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.xpanse.terraform.boot.models.SystemStatus;
+import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
 import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformHealthCheckException;
@@ -269,9 +269,9 @@ public class TerraformExecutor {
     /**
      * Perform Terraform health checks by creating a Terraform test configuration file.
      *
-     * @return SystemStatus.
+     * @return TerraformBootSystemStatus.
      */
-    public SystemStatus tfHealthCheck() {
+    public TerraformBootSystemStatus tfHealthCheck() {
         String filePath = getModuleFullPath(HEALTH_CHECK_DIR) + File.separator
                 + TEST_FILE_NAME;
         try {
@@ -288,7 +288,7 @@ public class TerraformExecutor {
                     "Error creating or writing to file '" + filePath + "': " + e.getMessage());
         }
         TerraformValidationResult terraformValidationResult = tfValidate(HEALTH_CHECK_DIR);
-        SystemStatus systemStatus = new SystemStatus();
+        TerraformBootSystemStatus systemStatus = new TerraformBootSystemStatus();
         if (terraformValidationResult.isValid()) {
             systemStatus.setHealthStatus(HealthStatus.OK);
             return systemStatus;
