@@ -16,7 +16,7 @@ A spring-boot-based project which aims to provide a RESTful API for Terraform CL
 Server can be compiled and started as below
 
 ```shell
-./mvmw clean install -DskipTests
+./mvn clean install -DskipTests
 java -jar target/terraform-boot-*.jar
 ```
 
