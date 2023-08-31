@@ -5,6 +5,7 @@
 
 package org.eclipse.xpanse.terraform.boot.models.response;
 
+import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,6 +19,8 @@ public class TerraformResult {
     private boolean isCommandSuccessful;
     private String commandStdOutput;
     private String commandStdError;
+    private String terraformState;
+    private Map<String, String> importantFileContentMap;
 
 
 }

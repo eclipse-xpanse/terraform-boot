@@ -8,13 +8,13 @@ package org.eclipse.xpanse.terraform.boot.models.request.async;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyWithScriptsRequest;
 
 /**
- * Data model for the terraform async deploy requests.
+ * Data model for the terraform async destroy requests.
  */
 @Data
-public class TerraformAsyncDeployRequest extends TerraformDeployRequest {
+public class TerraformAsyncDestroyFromDirectoryRequest extends TerraformDestroyWithScriptsRequest {
 
     @NotNull
     @Schema(description = "Configuration information of webhook.")

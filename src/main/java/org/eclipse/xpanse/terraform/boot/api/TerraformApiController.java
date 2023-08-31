@@ -9,16 +9,22 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.io.File;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDestroyRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployWithScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyWithScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDestroyFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
-import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
+import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformDirectoryService;
+import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformScriptsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -40,11 +46,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/terraform-boot")
 public class TerraformApiController {
 
-    private final TerraformExecutor terraformExecutor;
+    private final TerraformDirectoryService terraformDirectoryService;
+    private final TerraformScriptsService terraformScriptsService;
 
     @Autowired
-    public TerraformApiController(TerraformExecutor terraformExecutor) {
-        this.terraformExecutor = terraformExecutor;
+    public TerraformApiController(
+            @Qualifier("terraformDirectoryService")
+                    TerraformDirectoryService terraformDirectoryService,
+            TerraformScriptsService terraformScriptsService) {
+        this.terraformDirectoryService = terraformDirectoryService;
+        this.terraformScriptsService = terraformScriptsService;
     }
 
     /**
@@ -57,7 +68,7 @@ public class TerraformApiController {
     @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformBootSystemStatus healthCheck() {
-        return this.terraformExecutor.tfHealthCheck();
+        return terraformDirectoryService.tfHealthCheck();
     }
 
     /**
@@ -73,7 +84,7 @@ public class TerraformApiController {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory) {
-        return this.terraformExecutor.tfValidate(moduleDirectory);
+        return terraformDirectoryService.tfValidateFromDirectory(moduleDirectory);
     }
 
     /**
@@ -89,8 +100,10 @@ public class TerraformApiController {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody TerraformDeployRequest terraformDeployRequest) {
-        return this.terraformExecutor.deploy(terraformDeployRequest, moduleDirectory);
+            @Valid @RequestBody
+                    TerraformDeployFromDirectoryRequest request) {
+        return terraformDirectoryService.deployFromDirectory(request,
+                moduleDirectory + File.separator + UUID.randomUUID());
     }
 
     /**
@@ -107,41 +120,65 @@ public class TerraformApiController {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody TerraformDestroyRequest terraformDestroyRequest) {
-        return this.terraformExecutor.destroy(terraformDestroyRequest, moduleDirectory);
+            @Valid @RequestBody
+                    TerraformDestroyFromDirectoryRequest request) {
+        return terraformDirectoryService.destroyFromDirectory(request,
+                moduleDirectory + File.separator + UUID.randomUUID());
     }
 
     /**
-     * Method to async deploy resources requested in a workspace.
+     * Method to deploy resources by scripts.
      *
+     * @return Returns the status of the deployment.
+     */
+    @Tag(name = "Terraform", description = "APIs for running Terraform commands")
+    @Operation(description = "Deploy resources via Terraform")
+    @PostMapping(value = "/deploy/scripts", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public TerraformResult deployWithScripts(
+            @Valid @RequestBody TerraformDeployWithScriptsRequest request) {
+        return terraformScriptsService.deployWithScripts(request);
+    }
+
+    /**
+     * Method to destroy resources by scripts.
+     *
+     * @return Returns the status of to Destroy.
+     */
+    @Tag(name = "Terraform", description = "APIs for running Terraform commands")
+    @Operation(description = "Destroy resources via Terraform")
+    @PostMapping(value = "/destroy/scripts", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public TerraformResult destroyWithScripts(
+            @Valid @RequestBody TerraformDestroyWithScriptsRequest request) {
+        return terraformScriptsService.destroyWithScripts(request);
+    }
+
+    /**
+     * Method to async deploy resources by scripts.
      */
     @Tag(name = "Terraform", description = "APIs for running Terraform commands")
     @Operation(description = "async deploy resources via Terraform")
-    @PostMapping(value = "/deploy/async/{module_directory}", produces =
+    @PostMapping(value = "/deploy/scripts/async", produces =
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void asyncDeploy(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody TerraformAsyncDeployRequest asyncDeployRequest) {
-        terraformExecutor.asyncDeploy(asyncDeployRequest, moduleDirectory);
+    public void asyncDeployWithScripts(
+            @Valid @RequestBody TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest) {
+        terraformScriptsService.asyncDeployWithScripts(asyncDeployRequest);
     }
 
     /**
-     * Method to async destroy resources requested in a workspace.
-     *
+     * Method to async destroy resources by scripts.
      */
     @Tag(name = "Terraform", description = "APIs for running Terraform commands")
     @Operation(description = "Async destroy the Terraform modules")
-    @DeleteMapping(value = "/destroy/async/{module_directory}",
+    @DeleteMapping(value = "/destroy/scripts/async",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void asyncDestroy(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody TerraformAsyncDestroyRequest asyncDestroyRequest) {
-        terraformExecutor.asyncDestroy(asyncDestroyRequest, moduleDirectory);
+    public void asyncDestroyWithScripts(
+            @Valid @RequestBody TerraformAsyncDestroyFromDirectoryRequest asyncDestroyRequest) {
+        terraformScriptsService.asyncDestroyWithScripts(asyncDestroyRequest);
     }
 }
