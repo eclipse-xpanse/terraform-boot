@@ -17,4 +17,8 @@ public class TerraformExecutorException extends RuntimeException {
     public TerraformExecutorException(String message, String output) {
         super("Executor Exception:" + message + System.lineSeparator() + output);
     }
+
+    public TerraformExecutorException(String message, Throwable ex) {
+        super(message, ex);
+    }
 }
