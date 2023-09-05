@@ -19,6 +19,7 @@ import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyWithScri
 import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDestroyFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
+import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -48,6 +49,15 @@ public class TerraformScriptsService extends TerraformDirectoryService {
         this.executor = executor;
         this.restTemplate = restTemplate;
 
+    }
+
+    /**
+     * Method of deployment a service using a script.
+     */
+    public TerraformValidationResult validateWithScripts(
+            TerraformDeployWithScriptsRequest request) {
+        String moduleDirectory = buildDeployEnv(request.getScripts());
+        return tfValidateFromDirectory(moduleDirectory);
     }
 
     /**

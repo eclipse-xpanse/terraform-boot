@@ -127,6 +127,21 @@ public class TerraformApiController {
     }
 
     /**
+     * Method to validate resources by scripts.
+     *
+     * @return Returns the status of the deployment.
+     */
+    @Tag(name = "Terraform", description = "APIs for running Terraform commands")
+    @Operation(description = "Deploy resources via Terraform")
+    @PostMapping(value = "/validate/scripts", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public TerraformValidationResult validateWithScripts(
+            @Valid @RequestBody TerraformDeployWithScriptsRequest request) {
+        return terraformScriptsService.validateWithScripts(request);
+    }
+
+    /**
      * Method to deploy resources by scripts.
      *
      * @return Returns the status of the deployment.
