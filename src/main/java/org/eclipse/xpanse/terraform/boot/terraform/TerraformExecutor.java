@@ -158,7 +158,7 @@ public class TerraformExecutor {
      * Get the full path of Module.
      */
     public String getModuleFullPath(String moduleDirectory) {
-        return this.moduleParentDirectoryPath + moduleDirectory;
+        return this.moduleParentDirectoryPath + File.separator + moduleDirectory;
     }
 
 
