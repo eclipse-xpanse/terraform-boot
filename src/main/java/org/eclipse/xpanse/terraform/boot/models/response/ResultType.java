@@ -18,7 +18,8 @@ public enum ResultType {
     UNPROCESSABLE_ENTITY("Unprocessable Entity"),
     TERRAFORM_EXECUTION_FAILED("Terraform Execution Failed"),
     UNSUPPORTED_ENUM_VALUE("Unsupported Enum Value"),
-    SERVICE_UNAVAILABLE("Service Unavailable");
+    SERVICE_UNAVAILABLE("Service Unavailable"),
+    UNAUTHORIZED("Unauthorized");
 
     private final String value;
 
