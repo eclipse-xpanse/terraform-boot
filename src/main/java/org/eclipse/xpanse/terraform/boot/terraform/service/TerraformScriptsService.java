@@ -9,6 +9,7 @@ package org.eclipse.xpanse.terraform.boot.terraform.service;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
- *  Terraform service classes are deployed form Scripts.
+ * Terraform service classes are deployed form Scripts.
  */
 @Slf4j
 @Service
@@ -82,8 +83,19 @@ public class TerraformScriptsService extends TerraformDirectoryService {
     @Async("taskExecutor")
     public void asyncDeployWithScripts(
             TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest) {
-        TerraformResult result = deployWithScripts(asyncDeployRequest);
-        log.info("Deployment service complete, {}", result.getCommandStdOutput());
+        TerraformResult result;
+        try {
+            result = deployWithScripts(asyncDeployRequest);
+            log.info("Deployment service complete, {}", result.getCommandStdOutput());
+        } catch (RuntimeException e) {
+            result = TerraformResult.builder()
+                    .commandStdOutput(null)
+                    .commandStdError(e.getMessage())
+                    .isCommandSuccessful(false)
+                    .terraformState(null)
+                    .importantFileContentMap(new HashMap<>())
+                    .build();
+        }
         restTemplate.postForLocation(asyncDeployRequest.getWebhookConfig().getUrl(), result);
     }
 
@@ -92,8 +104,19 @@ public class TerraformScriptsService extends TerraformDirectoryService {
      */
     @Async("taskExecutor")
     public void asyncDestroyWithScripts(TerraformAsyncDestroyFromDirectoryRequest request) {
-        TerraformResult result = destroyWithScripts(request);
-        log.info("Destroy service complete, {}", result.getCommandStdOutput());
+        TerraformResult result;
+        try {
+            result = destroyWithScripts(request);
+            log.info("Destroy service complete, {}", result.getCommandStdOutput());
+        } catch (RuntimeException e) {
+            result = TerraformResult.builder()
+                    .commandStdOutput(null)
+                    .commandStdError(e.getMessage())
+                    .isCommandSuccessful(false)
+                    .terraformState(null)
+                    .importantFileContentMap(new HashMap<>())
+                    .build();
+        }
         restTemplate.postForLocation(request.getWebhookConfig().getUrl(), result);
     }
 

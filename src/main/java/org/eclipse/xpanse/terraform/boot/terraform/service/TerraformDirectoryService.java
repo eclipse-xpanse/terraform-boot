@@ -32,6 +32,7 @@ import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
 import org.eclipse.xpanse.terraform.boot.terraform.utils.SystemCmdResult;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -119,23 +120,11 @@ public class TerraformDirectoryService {
         } else {
             result = executor.tfApply(request.getVariables(), request.getEnvVariables(),
                     moduleDirectory);
-            if (!result.isCommandSuccessful()) {
-                log.error("TFExecutor.tfApply failed.");
-                throw new TerraformExecutorException("TFExecutor.tfApply failed.",
-                        result.getCommandStdError());
-            }
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
-        TerraformResult build = TerraformResult.builder()
-                .commandStdOutput(result.getCommandStdOutput())
-                .commandStdError(result.getCommandStdError())
-                .isCommandSuccessful(result.isCommandSuccessful())
-                .terraformState(getTerraformState(workspace))
-                .importantFileContentMap(
-                        getImportantFilesContent(workspace))
-                .build();
+        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
         deleteWorkspace(workspace);
-        return build;
+        return terraformResult;
     }
 
     /**
@@ -151,17 +140,18 @@ public class TerraformDirectoryService {
                     result.getCommandStdError());
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
-        TerraformResult build = TerraformResult.builder()
-                .commandStdOutput(result.getCommandStdOutput())
-                .commandStdError(result.getCommandStdError())
-                .isCommandSuccessful(result.isCommandSuccessful())
-                .terraformState(getTerraformState(workspace))
-                .importantFileContentMap(
-                        getImportantFilesContent(workspace))
-                .build();
+        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
         deleteWorkspace(workspace);
-        return build;
+        return terraformResult;
+    }
 
+    private TerraformResult transSystemCmdResultToTerraformResult(SystemCmdResult result,
+            String workspace) {
+        TerraformResult terraformResult = TerraformResult.builder().build();
+        BeanUtils.copyProperties(result, terraformResult);
+        terraformResult.setTerraformState(getTerraformState(workspace));
+        terraformResult.setImportantFileContentMap(getImportantFilesContent(workspace));
+        return terraformResult;
     }
 
     /**
