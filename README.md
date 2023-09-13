@@ -16,7 +16,7 @@ A spring-boot-based project which aims to provide a RESTful API for Terraform CL
 Server can be compiled and started as below
 
 If you have a fully configured OAuth instance running on your local system, then you can use the below way to 
-start the application.The variables and their descriptions that need to be passed during oauth startup are recorded in 
+start the application. The variables and their descriptions that need to be passed during oauth startup are recorded in 
 the Available Configurations table.
 
 ### From Command Line
