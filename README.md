@@ -27,11 +27,11 @@ the Available Configurations table.
 ./mvmw clean install -DskipTests
 $ java -jar target/terraform-boot-*.jar\
 --spring.profiles.active=oauth \
---authorization-token-type=${token-type} \
---authorization-server-endpoint=${server-endpoint} \
---authorization-api-client-id=${client-id} \
---authorization-api-client-secret=${client-secret} \
---authorization-swagger-ui-client-id=${swagger-ui-cleint-id}
+--authorization.token.type=${token-type} \
+--authorization.server.endpoint=${server-endpoint} \
+--authorization.api.client.id=${client-id} \
+--authorization.api.client.secret=${client-secret} \
+--authorization.swagger.ui.client.id=${swagger-ui-cleint-id}
 ```
 
 2.Start without oauth
@@ -84,14 +84,14 @@ The below property names can be changed in the following ways
 1. passing the property values to the server startup command as ``--${property-name}=${property-value}``
 2. Setting corresponding environment variables before starting the server.
 
-| property name                      | environment variable               | default value                                    | description                                                                                                           |
-|------------------------------------|------------------------------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| terraform_binary_path              | TERRAFORM_BINARY_PATH              | Terraform available on syspath                   | The path to the terraform binary                                                                                      |
-| terraform.root.module.directory    | TERRAFORM_ROOT_MODULE_DIRECTORY    | /tmp on Linux<br/>\AppData\Local\Temp on Windows | The path to the parent directory where all terraform module directories will be stored at as subdirs                  |
-| log.terraform.stdout.stderr        | LOG_TERRAFORM_STDOUT_STDERR        | false                                            | Controls if the command execution output must be logged. If disabled, the output is only returned in the API response |
-| terraform.log.level                | TERRAFORM_LOG_LEVEL                | INFO                                             | Controls the log level of the terraform binary. Allowed values are INFO, DEBUG, TRACE, WARN and ERROR                 |
-| authorization-token-type           | AUTHORIZATION_TOKEN_TYPE           | OpaqueToken                                      | Authorization server authentication Type, allowed values: OpaqueToken or JWT                                          |
-| authorization-server-endpoint      | AUTHORIZATION_SERVER_ENDPOINT      |                                                  | The endpoint value of the authorization server                                                                        |
-| authorization-api-client-id        | AUTHORIZATION_API_CLIENT_ID        |                                                  | The ID value of the authorization server API client                                                                   |
-| authorization-api-client-secret    | AUTHORIZATION_API_CLIENT_SECRET    |                                                  | The secret value of the authorization server API client                                                               |
-| authorization-swagger-ui-client-id | AUTHORIZATION_SWAGGER_UI_CLIENT_ID |                                                  | The ID value of the authorization server swagger-ui client                                                            |
+| property name                   | environment variable            | default value                                    | description                                                                                                           |
+|---------------------------------|---------------------------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| terraform_binary_path           | TERRAFORM_BINARY_PATH           | Terraform available on syspath                   | The path to the terraform binary                                                                                      |
+| terraform.root.module.directory | TERRAFORM_ROOT_MODULE_DIRECTORY | /tmp on Linux<br/>\AppData\Local\Temp on Windows | The path to the parent directory where all terraform module directories will be stored at as subdirs                  |
+| log.terraform.stdout.stderr     | LOG_TERRAFORM_STDOUT_STDERR     | false                                             | Controls if the command execution output must be logged. If disabled, the output is only returned in the API response |
+| terraform.log.level             | TERRAFORM_LOG_LEVEL             | INFO                                             | Controls the log level of the terraform binary. Allowed values are INFO, DEBUG, TRACE, WARN and ERROR                 |
+| authorization.token.type        | AUTHORIZATION_TOKEN_TYPE        | JWT                                      | Authorization server authentication Type, allowed values: OpaqueToken or JWT
+| authorization.server.endpoint   | AUTHORIZATION_SERVER_ENDPOINT   |                                                  | The endpoint value of the authorization server
+| authorization.api.client.id     | AUTHORIZATION_API_CLIENT_ID     |                                                  | The ID value of the authorization server API client
+| authorization.api.client.secret | AUTHORIZATION_API_CLIENT_SECRET |                                                  | The secret value of the authorization server API client
+| authorization.swagger.ui.client.id| AUTHORIZATION_SWAGGER_UI_CLIENT_ID|                                              | The ID value of the authorization server swagger-ui client

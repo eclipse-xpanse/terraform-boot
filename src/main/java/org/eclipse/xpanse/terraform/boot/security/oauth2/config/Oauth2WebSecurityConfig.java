@@ -58,7 +58,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity(securedEnabled = true)
 public class Oauth2WebSecurityConfig {
 
-    @Value("${authorization-token-type:JWT}")
+    @Value("${authorization.token.type:JWT}")
     private String authTokenType;
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
@@ -148,7 +148,7 @@ public class Oauth2WebSecurityConfig {
     }
 
     @Bean
-    @ConditionalOnProperty("authorization-token-type=JWT")
+    @ConditionalOnProperty("authorization.token.type")
     JwtDecoder jwtDecoder() {
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation(issuerUri);
         OAuth2TokenValidator<Jwt> withClockSkew = new DelegatingOAuth2TokenValidator<>(
