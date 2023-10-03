@@ -16,3 +16,9 @@ project:
 release:
   github:
     overwrite: true
+signing:
+  active: ALWAYS
+  armored: true
+files:
+  artifacts:
+    - path: 'target/terraform-boot-{{projectEffectiveVersion}}.jar'

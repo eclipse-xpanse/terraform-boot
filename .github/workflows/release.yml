@@ -70,7 +70,7 @@ jobs:
           current-version: ${{ env.CURRENT_VERSION }}
           version-fragment: ${{ env.VERSION_FRAGMENT }}
 
-      - name: Remove SNAPSHOT from POM version
+      - name: Update POMs to version to be released
         run: mvn versions:set -DnewVersion=${{ steps.new_version.outputs.next-version }} -DgenerateBackupPoms=false
 
       - name: Build
