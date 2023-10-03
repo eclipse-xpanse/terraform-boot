@@ -10,15 +10,15 @@ on:
     inputs:
       ReleaseType:
         type: choice
-        description: Select the next development version
+        description: Select the version to released
         options:
           - Major Version
           - Minor Version
           - Patch Version
 
 env:
-  BOT_USER_NAME: eclipse-terraform-boot-bot
-  BOT_EMAIL_ID: terraform-boot-bot@eclipse.org
+  BOT_USER_NAME: eclipse-xpanse-bot
+  BOT_EMAIL_ID: xpanse-bot@eclipse.org
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          token: ${{ secrets.BOT_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set Up JDK 17
         uses: actions/setup-java@v3
@@ -71,7 +71,7 @@ jobs:
           version-fragment: ${{ env.VERSION_FRAGMENT }}
 
       - name: Remove SNAPSHOT from POM version
-        run: mvn versions:set -DremoveSnapshot -DgenerateBackupPoms=false
+        run: mvn versions:set -DnewVersion=${{ steps.new_version.outputs.next-version }} -DgenerateBackupPoms=false
 
       - name: Build
         run: mvn clean install -DskipTests
@@ -100,7 +100,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.CURRENT_VERSION }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.new_version.outputs.next-version }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: false
 
@@ -116,7 +116,7 @@ jobs:
       - name: Release new version on GitHub
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JRELEASER_PROJECT_VERSION: ${{ env.CURRENT_VERSION }}
+          JRELEASER_PROJECT_VERSION: ${{ steps.new_version.outputs.next-version }}
         uses: jreleaser/release-action@v2
         with:
           arguments: release
@@ -141,7 +141,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
-          token: ${{ secrets.BOT_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update next development version in POMs
         run: mvn versions:set -DnewVersion=${{ needs.release.outputs.next-version }}-SNAPSHOT -DgenerateBackupPoms=false
