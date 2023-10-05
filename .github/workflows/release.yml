@@ -115,7 +115,8 @@ jobs:
 
       - name: Release new version on GitHub
         env:
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.ORG_GPG_PUBLIC_KEY }}
           JRELEASER_PROJECT_VERSION: ${{ steps.new_version.outputs.next-version }}
         uses: jreleaser/release-action@v2
         with:
