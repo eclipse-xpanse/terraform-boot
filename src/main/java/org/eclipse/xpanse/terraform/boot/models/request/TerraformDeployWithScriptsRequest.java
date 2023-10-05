@@ -18,7 +18,7 @@ import lombok.Data;
 public class TerraformDeployWithScriptsRequest extends TerraformDeployFromDirectoryRequest {
 
     @NotNull
-    @Schema(description = "List of script files for deployment requests deployed via scripts")
+    @Schema(description = "List of Terraform script files to be considered for deploying changes.")
     private List<String> scripts;
 
 }
