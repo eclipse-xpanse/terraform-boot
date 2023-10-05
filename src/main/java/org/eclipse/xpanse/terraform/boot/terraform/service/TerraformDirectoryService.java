@@ -26,6 +26,8 @@ import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
 import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformHealthCheckException;
+import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
+import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
@@ -145,6 +147,16 @@ public class TerraformDirectoryService {
         return terraformResult;
     }
 
+    /**
+     * Executes terraform plan command on a directory and returns the plan as a JSON string.
+     */
+    public TerraformPlan getTerraformPlanFromDirectory(TerraformPlanFromDirectoryRequest request,
+                                                       String moduleDirectory) {
+        String result = executor.getTerraformPlanAsJson(request.getVariables(),
+                request.getEnvVariables(), moduleDirectory);
+        return TerraformPlan.builder().plan(result).build();
+    }
+
     private TerraformResult transSystemCmdResultToTerraformResult(SystemCmdResult result,
             String workspace) {
         TerraformResult terraformResult = TerraformResult.builder().build();
@@ -157,7 +169,7 @@ public class TerraformDirectoryService {
     /**
      * Get the content of the tfState file.
      */
-    public String getTerraformState(String workspace) {
+    private String getTerraformState(String workspace) {
         File tfState = new File(workspace + File.separator + STATE_FILE_NAME);
         if (!tfState.exists()) {
             log.info("Terraform state file not exists.");
@@ -173,7 +185,7 @@ public class TerraformDirectoryService {
     /**
      * get file content.
      */
-    public Map<String, String> getImportantFilesContent(String workspace) {
+    private Map<String, String> getImportantFilesContent(String workspace) {
         Map<String, String> fileContentMap = new HashMap<>();
         File workPath = new File(workspace);
         if (workPath.isDirectory() && workPath.exists()) {

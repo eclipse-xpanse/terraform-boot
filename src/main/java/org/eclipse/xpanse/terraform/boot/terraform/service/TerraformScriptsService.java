@@ -15,6 +15,8 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
+import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
+import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployFromDirectoryRequest;
@@ -75,6 +77,14 @@ public class TerraformScriptsService extends TerraformDirectoryService {
     public TerraformResult destroyWithScripts(TerraformDestroyWithScriptsRequest request) {
         String moduleDirectory = buildDestroyEnv(request.getScripts(), request.getTfState());
         return destroyFromDirectory(request, moduleDirectory);
+    }
+
+    /**
+     * Method of destroy a service using a script.
+     */
+    public TerraformPlan getTerraformPlanFromScripts(TerraformPlanWithScriptsRequest request) {
+        String moduleDirectory = buildDeployEnv(request.getScripts());
+        return getTerraformPlanFromDirectory(request, moduleDirectory);
     }
 
     /**

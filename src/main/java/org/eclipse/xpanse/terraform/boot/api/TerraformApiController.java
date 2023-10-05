@@ -9,10 +9,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.io.File;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
+import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
+import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyFromDirectoryRequest;
@@ -52,7 +53,7 @@ public class TerraformApiController {
     @Autowired
     public TerraformApiController(
             @Qualifier("terraformDirectoryService")
-                    TerraformDirectoryService terraformDirectoryService,
+            TerraformDirectoryService terraformDirectoryService,
             TerraformScriptsService terraformScriptsService) {
         this.terraformDirectoryService = terraformDirectoryService;
         this.terraformScriptsService = terraformScriptsService;
@@ -101,9 +102,8 @@ public class TerraformApiController {
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
             @Valid @RequestBody
-                    TerraformDeployFromDirectoryRequest request) {
-        return terraformDirectoryService.deployFromDirectory(request,
-                moduleDirectory + File.separator + UUID.randomUUID());
+            TerraformDeployFromDirectoryRequest request) {
+        return terraformDirectoryService.deployFromDirectory(request, moduleDirectory);
     }
 
     /**
@@ -121,9 +121,8 @@ public class TerraformApiController {
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
             @Valid @RequestBody
-                    TerraformDestroyFromDirectoryRequest request) {
-        return terraformDirectoryService.destroyFromDirectory(request,
-                moduleDirectory + File.separator + UUID.randomUUID());
+            TerraformDestroyFromDirectoryRequest request) {
+        return terraformDirectoryService.destroyFromDirectory(request, moduleDirectory);
     }
 
     /**
@@ -195,5 +194,39 @@ public class TerraformApiController {
     public void asyncDestroyWithScripts(
             @Valid @RequestBody TerraformAsyncDestroyFromDirectoryRequest asyncDestroyRequest) {
         terraformScriptsService.asyncDestroyWithScripts(asyncDestroyRequest);
+    }
+
+    /**
+     * Method to get Terraform plan as a JSON string from a directory.
+     *
+     * @return Returns the terraform plan as a JSON string.
+     */
+    @Tag(name = "Terraform", description = "APIs for running Terraform commands")
+    @Operation(description = "Get Terraform Plan as JSON string from a directory")
+    @PostMapping(value = "/plan/{module_directory}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public TerraformPlan plan(
+            @Parameter(name = "module_directory",
+                    description = "directory name where the Terraform module files exist.")
+            @PathVariable("module_directory") String moduleDirectory,
+            @Valid @RequestBody TerraformPlanFromDirectoryRequest request) {
+        return terraformDirectoryService.getTerraformPlanFromDirectory(request,
+                moduleDirectory);
+    }
+
+    /**
+     * Method to get Terraform plan as a JSON string from the list of script files provided.
+     *
+     * @return Returns the terraform plan as a JSON string.
+     */
+    @Tag(name = "Terraform", description = "APIs for running Terraform commands")
+    @Operation(description =
+            "Get Terraform Plan as JSON string from the list of script files provided")
+    @PostMapping(value = "/plan", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public TerraformPlan planWithScripts(
+            @Valid @RequestBody TerraformPlanWithScriptsRequest request) {
+        return terraformScriptsService.getTerraformPlanFromScripts(request);
     }
 }
