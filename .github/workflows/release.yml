@@ -43,8 +43,8 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
-          server-username: ${{ secrets.ORG_OSSRH_USERNAME }}
-          server-password: ${{ secrets.ORG_OSSRH_PASSWORD }}
+          gpg-private-key: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.ORG_GPG_PASSPHRASE }}
           server-id: maven
 
       - name: Set current version env variable
@@ -115,6 +115,8 @@ jobs:
 
       - name: Release new version on GitHub
         env:
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.ORG_GPG_PASSPHRASE }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.ORG_GPG_PRIVATE_KEY }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.ORG_GPG_PUBLIC_KEY }}
           JRELEASER_PROJECT_VERSION: ${{ steps.new_version.outputs.next-version }}
