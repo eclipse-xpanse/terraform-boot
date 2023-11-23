@@ -116,12 +116,19 @@ public class TerraformDirectoryService {
     public TerraformResult deployFromDirectory(TerraformDeployFromDirectoryRequest request,
             String moduleDirectory) {
         SystemCmdResult result;
-        if (Boolean.TRUE.equals(request.getIsPlanOnly())) {
-            result = executor.tfPlan(request.getVariables(), request.getEnvVariables(),
-                    moduleDirectory);
-        } else {
-            result = executor.tfApply(request.getVariables(), request.getEnvVariables(),
-                    moduleDirectory);
+        try {
+            if (Boolean.TRUE.equals(request.getIsPlanOnly())) {
+                result = executor.tfPlan(request.getVariables(), request.getEnvVariables(),
+                        moduleDirectory);
+            } else {
+                result = executor.tfApply(request.getVariables(), request.getEnvVariables(),
+                        moduleDirectory);
+            }
+        } catch (TerraformExecutorException tfEx) {
+            log.error("Terraform deploy service failed. error:{}", tfEx.getMessage());
+            result = new SystemCmdResult();
+            result.setCommandSuccessful(false);
+            result.setCommandStdError(tfEx.getMessage());
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
@@ -134,12 +141,15 @@ public class TerraformDirectoryService {
      */
     public TerraformResult destroyFromDirectory(TerraformDestroyFromDirectoryRequest request,
             String moduleDirectory) {
-        SystemCmdResult result = executor.tfDestroy(request.getVariables(),
-                request.getEnvVariables(), moduleDirectory);
-        if (!result.isCommandSuccessful()) {
-            log.error("TFExecutor.tfDestroy failed.");
-            throw new TerraformExecutorException("TFExecutor.tfDestroy failed.",
-                    result.getCommandStdError());
+        SystemCmdResult result;
+        try {
+            result = executor.tfDestroy(request.getVariables(),
+                    request.getEnvVariables(), moduleDirectory);
+        } catch (TerraformExecutorException tfEx) {
+            log.error("Terraform destroy service failed. error:{}", tfEx.getMessage());
+            result = new SystemCmdResult();
+            result.setCommandSuccessful(false);
+            result.setCommandStdError(tfEx.getMessage());
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);

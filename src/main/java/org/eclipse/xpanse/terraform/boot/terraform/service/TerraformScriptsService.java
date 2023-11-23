@@ -96,7 +96,6 @@ public class TerraformScriptsService extends TerraformDirectoryService {
         TerraformResult result;
         try {
             result = deployWithScripts(asyncDeployRequest);
-            log.info("Deployment service complete, {}", result.getCommandStdOutput());
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
                     .commandStdOutput(null)
@@ -106,7 +105,9 @@ public class TerraformScriptsService extends TerraformDirectoryService {
                     .importantFileContentMap(new HashMap<>())
                     .build();
         }
-        restTemplate.postForLocation(asyncDeployRequest.getWebhookConfig().getUrl(), result);
+        String url = asyncDeployRequest.getWebhookConfig().getUrl();
+        log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
+        restTemplate.postForLocation(url, result);
     }
 
     /**
@@ -117,7 +118,6 @@ public class TerraformScriptsService extends TerraformDirectoryService {
         TerraformResult result;
         try {
             result = destroyWithScripts(request);
-            log.info("Destroy service complete, {}", result.getCommandStdOutput());
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
                     .commandStdOutput(null)
@@ -127,7 +127,10 @@ public class TerraformScriptsService extends TerraformDirectoryService {
                     .importantFileContentMap(new HashMap<>())
                     .build();
         }
-        restTemplate.postForLocation(request.getWebhookConfig().getUrl(), result);
+
+        String url = request.getWebhookConfig().getUrl();
+        log.info("Destroy service complete, callback POST url:{}, requestBody:{}", url, result);
+        restTemplate.postForLocation(url, result);
     }
 
     private String buildDeployEnv(List<String> scripts) {
