@@ -59,32 +59,35 @@ public class TerraformScriptsService extends TerraformDirectoryService {
      */
     public TerraformValidationResult validateWithScripts(
             TerraformDeployWithScriptsRequest request) {
-        String moduleDirectory = buildDeployEnv(request.getScripts());
-        return tfValidateFromDirectory(moduleDirectory);
+        UUID uuid = UUID.randomUUID();
+        buildDeployEnv(request.getScripts(), uuid);
+        return tfValidateFromDirectory(uuid.toString());
     }
 
     /**
      * Method of deployment a service using a script.
      */
-    public TerraformResult deployWithScripts(TerraformDeployWithScriptsRequest request) {
-        String moduleDirectory = buildDeployEnv(request.getScripts());
-        return deployFromDirectory(request, moduleDirectory);
+    public TerraformResult deployWithScripts(TerraformDeployWithScriptsRequest request, UUID uuid) {
+        buildDeployEnv(request.getScripts(), uuid);
+        return deployFromDirectory(request, uuid.toString());
     }
 
     /**
      * Method of destroy a service using a script.
      */
-    public TerraformResult destroyWithScripts(TerraformDestroyWithScriptsRequest request) {
-        String moduleDirectory = buildDestroyEnv(request.getScripts(), request.getTfState());
-        return destroyFromDirectory(request, moduleDirectory);
+    public TerraformResult destroyWithScripts(TerraformDestroyWithScriptsRequest request,
+            UUID uuid) {
+        buildDestroyEnv(request.getScripts(), request.getTfState(), uuid);
+        return destroyFromDirectory(request, uuid.toString());
     }
 
     /**
      * Method of destroy a service using a script.
      */
-    public TerraformPlan getTerraformPlanFromScripts(TerraformPlanWithScriptsRequest request) {
-        String moduleDirectory = buildDeployEnv(request.getScripts());
-        return getTerraformPlanFromDirectory(request, moduleDirectory);
+    public TerraformPlan getTerraformPlanFromScripts(TerraformPlanWithScriptsRequest request,
+            UUID uuid) {
+        buildDeployEnv(request.getScripts(), uuid);
+        return getTerraformPlanFromDirectory(request, uuid.toString());
     }
 
     /**
@@ -92,10 +95,10 @@ public class TerraformScriptsService extends TerraformDirectoryService {
      */
     @Async("taskExecutor")
     public void asyncDeployWithScripts(
-            TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest) {
+            TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest, UUID uuid) {
         TerraformResult result;
         try {
-            result = deployWithScripts(asyncDeployRequest);
+            result = deployWithScripts(asyncDeployRequest, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
                     .commandStdOutput(null)
@@ -114,10 +117,11 @@ public class TerraformScriptsService extends TerraformDirectoryService {
      * Async destroy resource of the service.
      */
     @Async("taskExecutor")
-    public void asyncDestroyWithScripts(TerraformAsyncDestroyFromDirectoryRequest request) {
+    public void asyncDestroyWithScripts(TerraformAsyncDestroyFromDirectoryRequest request,
+            UUID uuid) {
         TerraformResult result;
         try {
-            result = destroyWithScripts(request);
+            result = destroyWithScripts(request, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
                     .commandStdOutput(null)
@@ -133,21 +137,19 @@ public class TerraformScriptsService extends TerraformDirectoryService {
         restTemplate.postForLocation(url, result);
     }
 
-    private String buildDeployEnv(List<String> scripts) {
-        String moduleDirectory = UUID.randomUUID().toString();
-        String workspace = executor.getModuleFullPath(moduleDirectory);
+    private void buildDeployEnv(List<String> scripts, UUID uuid) {
+        String workspace = executor.getModuleFullPath(uuid.toString());
         buildWorkspace(workspace);
         buildScriptFiles(workspace, scripts);
-        return moduleDirectory;
     }
 
-    private String buildDestroyEnv(List<String> scripts, String tfState) {
-        String moduleDirectory = buildDeployEnv(scripts);
+    private void buildDestroyEnv(List<String> scripts, String tfState, UUID uuid) {
+        buildDeployEnv(scripts, uuid);
         if (StringUtils.isBlank(tfState)) {
             throw new TerraformExecutorException("terraform .tfState file create error");
         }
         String fileName =
-                executor.getModuleFullPath(moduleDirectory) + File.separator + STATE_FILE_NAME;
+                executor.getModuleFullPath(uuid.toString()) + File.separator + STATE_FILE_NAME;
         try (FileWriter scriptWriter = new FileWriter(fileName)) {
             scriptWriter.write(tfState);
             log.info("terraform .tfState file create success, fileName: {}", fileName);
@@ -155,7 +157,6 @@ public class TerraformScriptsService extends TerraformDirectoryService {
             log.error("terraform .tfState file create failed.", ex);
             throw new TerraformExecutorException("terraform .tfState file create failed.", ex);
         }
-        return moduleDirectory;
     }
 
     private void buildWorkspace(String workspace) {
