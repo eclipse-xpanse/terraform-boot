@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 RUN addgroup -S terraform-boot && adduser -S -G terraform-boot terraform-boot
 RUN apk update && \
