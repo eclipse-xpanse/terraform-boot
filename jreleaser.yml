@@ -11,8 +11,8 @@ project:
       width: 250
       height: 250
   java:
-    version: "17"
-    groupId: "org.eclipse.xpanse"
+    version: "21"
+    groupId: "org.eclipse.xpanse.terraform.boot"
 release:
   github:
     overwrite: true
@@ -20,7 +20,7 @@ release:
       skipMergeCommits: true
       hide:
         contributors:
-          - eclipse-xpanse-bot
+          - 'eclipse-xpanse-bot'
 signing:
   active: ALWAYS
   armored: true
