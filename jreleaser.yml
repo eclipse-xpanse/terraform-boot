@@ -18,6 +18,9 @@ release:
     overwrite: true
     changelog:
       skipMergeCommits: true
+      hide:
+        contributors:
+          - eclipse-xpanse-bot
 signing:
   active: ALWAYS
   armored: true
