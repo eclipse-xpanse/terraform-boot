@@ -18,7 +18,7 @@ A spring-boot-based project which aims to provide a RESTful API for Terraform CL
 Pass the terraform root folder name in the request and terraform-boot will execute the requested Terraform method on
 this directory.
 
-### Terraform Root module Folder
+#### Terraform Root module Folder
 
 If we intend to use this mode of script execution, then we must ensure the scripts root directory is
 accessible to terraform-boot runtime.
