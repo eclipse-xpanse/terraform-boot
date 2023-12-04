@@ -72,8 +72,7 @@ public class TerraformExecutor {
             this.moduleParentDirectoryPath =
                     System.getProperty("java.io.tmpdir");
         } else {
-            this.moduleParentDirectoryPath =
-                    System.getProperty("java.io.tmpdir") + moduleParentDirectoryPath;
+            this.moduleParentDirectoryPath = moduleParentDirectoryPath;
         }
         this.systemCmd = systemCmd;
         this.customTerraformBinary = customTerraformBinary;
