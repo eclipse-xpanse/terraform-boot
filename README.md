@@ -43,14 +43,17 @@ the files and return terraform execution result.
 * plan - This wraps the Terraform 'plan' method.
 * healthCheck - This method returns the status of the terraform-boot application
 
-> > All terraform related methods above support both modes of operation mentioned in
-> > section [Modes of Terraform Script Execution](#modes-of-terraform-script-execution)
+> [!NOTE]
+> All terraform related methods above support both modes of operation mentioned in
+> section [Modes of Terraform Script Execution](#modes-of-terraform-script-execution)
 
 ## Supported Authentication Methods
-1. None - By default the API methods can be accessed without any authentication. 
-2. oauth - This can be enabled by activating spring profile - `oauth` 
+
+1. None - By default the API methods can be accessed without any authentication.
+2. oauth - This can be enabled by activating spring profile - `oauth`
 
 ## Available Configurations
+
 The below property names can be changed in the following ways
 
 1. passing the property values to the server startup command as ``--${property-name}=${property-value}``
