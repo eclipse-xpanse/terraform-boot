@@ -70,6 +70,7 @@ The below property names can be changed in the following ways
 | authorization.api.client.id        | AUTHORIZATION_API_CLIENT_ID        |                                                  | The ID value of the authorization server API client                                                                   |
 | authorization.api.client.secret    | AUTHORIZATION_API_CLIENT_SECRET    |                                                  | The secret value of the authorization server API client                                                               |
 | authorization.swagger.ui.client.id | AUTHORIZATION_SWAGGER_UI_CLIENT_ID |                                                  | The ID value of the authorization server swagger-ui client                                                            |
+| otel.exporter.otlp.endpoint        | OTEL_EXPORTER_OTLP_ENDPOINT        | http://localhost:4317                            | URL of the OTEL collector                                                                                             |
 
 ## Run Application
 
@@ -136,4 +137,14 @@ All configuration parameters can be passed as environment variables to the conta
 
 We also deliver a jar for each release and can be found in the asests list of each
 release [here](https://github.com/eclipse-xpanse/terraform-boot/releases).
-The jar can be started as mentioned in the same way we do for local development. 
+The jar can be started as mentioned in the same way we do for local development.
+
+### Observability
+
+`terraform-boot` provides an option to enable observability using [openTelemetry](https://opentelemetry.io/). This can
+be enabled by starting the runtime with profile `opentelemetry`.
+
+By enabling this profile, the application forwards metrics, traces and logs to the `otel-collector`.
+
+By default, the application sends all telemetry data to `http://localhost:4317` and this can be changed by updating the
+value of `otel.exporter.otlp.endpoint` configuration property.

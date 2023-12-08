@@ -25,7 +25,18 @@
 		<logbook.version>3.5.0</logbook.version>
 		<nimbusds.oidc.sdk.version>10.7</nimbusds.oidc.sdk.version>
 		<lombok.version>1.18.30</lombok.version>
+		<opentelemetry.version>1.32.0</opentelemetry.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+			<groupId>io.opentelemetry</groupId>
+			<artifactId>opentelemetry-bom</artifactId>
+			<version>${opentelemetry.version}</version>
+			<type>pom</type>
+		</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -78,6 +89,11 @@
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
 			<version>${nimbusds.oidc.sdk.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.opentelemetry.instrumentation</groupId>
+			<artifactId>opentelemetry-spring-boot-starter</artifactId>
+			<version>${opentelemetry.version}-alpha</version>
 		</dependency>
 	</dependencies>
 
