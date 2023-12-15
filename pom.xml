@@ -26,6 +26,7 @@
 		<nimbusds.oidc.sdk.version>11.7.1</nimbusds.oidc.sdk.version>
 		<lombok.version>1.18.30</lombok.version>
 		<opentelemetry.version>1.32.0</opentelemetry.version>
+		<eclipse.dash.tool.plugin>1.0.2</eclipse.dash.tool.plugin>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -165,4 +166,55 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>license-check</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.dash</groupId>
+						<artifactId>license-tool-plugin</artifactId>
+						<version>${eclipse.dash.tool.plugin}</version>
+						<executions>
+							<execution>
+								<id>license-check</id>
+								<goals>
+									<goal>license-check</goal>
+								</goals>
+								<configuration>
+									<failWhenReviewNeeded>false</failWhenReviewNeeded>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>apache.snapshots</id>
+			<url>https://repository.apache.org/content/groups/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>central</id>
+			<url>https://repo1.maven.org/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</pluginRepository>
+		<pluginRepository>
+			<id>dash-licenses</id>
+			<url>https://repo.eclipse.org/content/repositories/dash-licenses/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 </project>
