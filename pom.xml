@@ -26,7 +26,7 @@
 		<nimbusds.oidc.sdk.version>11.8</nimbusds.oidc.sdk.version>
 		<lombok.version>1.18.30</lombok.version>
 		<opentelemetry.version>1.32.0</opentelemetry.version>
-		<eclipse.dash.tool.plugin>1.0.2</eclipse.dash.tool.plugin>
+		<eclipse.dash.tool.plugin>1.1.0</eclipse.dash.tool.plugin>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
