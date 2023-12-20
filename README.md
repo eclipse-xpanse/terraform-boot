@@ -148,3 +148,7 @@ By enabling this profile, the application forwards metrics, traces and logs to t
 
 By default, the application sends all telemetry data to `http://localhost:4317` and this can be changed by updating the
 value of `otel.exporter.otlp.endpoint` configuration property.
+
+## Dependencies File
+
+All third-party related content is listed in the [DEPENDENCIES](DEPENDENCIES) file.
