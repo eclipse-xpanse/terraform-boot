@@ -1,6 +1,7 @@
 project:
   name: eclipse-terraform-boot
   license: Apache-2.0
+  description: RESTful APIs for executing Terraform commands.
   links:
     homepage: https://eclipse-xpanse.github.io/xpanse-website/
     documentation: https://eclipse-xpanse.github.io/xpanse-website/docs/intro
@@ -25,12 +26,23 @@ release:
       labelers:
         - label: 'botCommits'
           title: 'regex:.*GitHub Action.*'
+        - label: 'dependencies'
+          title: 'regex:(Bump|dependencies).*'
+        - label: 'changes'
+          title: 'regex:^((?!(Bump|dependencies)).)*$'
       hide:
         contributors:
           - eclipse-xpanse-bot
           - dependabot[bot]
       contributors:
         format: '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
+      categories:
+        - title: 'Changes'
+          labels:
+            - 'changes'
+        - title: 'Dependencies'
+          labels:
+            - 'dependencies'
 signing:
   active: ALWAYS
   armored: true
