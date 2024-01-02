@@ -164,6 +164,7 @@ public class TerraformDirectoryService {
                                                        String moduleDirectory) {
         String result = executor.getTerraformPlanAsJson(request.getVariables(),
                 request.getEnvVariables(), moduleDirectory);
+        deleteWorkspace(executor.getModuleFullPath(moduleDirectory));
         return TerraformPlan.builder().plan(result).build();
     }
 
