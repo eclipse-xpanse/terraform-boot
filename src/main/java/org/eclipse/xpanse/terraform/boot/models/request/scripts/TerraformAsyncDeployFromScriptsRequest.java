@@ -3,18 +3,20 @@
  * SPDX-FileCopyrightText: Huawei Inc.
  */
 
-package org.eclipse.xpanse.terraform.boot.models.request.async;
+package org.eclipse.xpanse.terraform.boot.models.request.scripts;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployWithScriptsRequest;
+import lombok.EqualsAndHashCode;
+import org.eclipse.xpanse.terraform.boot.models.request.webhook.WebhookConfig;
 
 /**
  * Data model for the terraform async deploy requests.
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class TerraformAsyncDeployFromDirectoryRequest extends TerraformDeployWithScriptsRequest {
+public class TerraformAsyncDeployFromScriptsRequest extends TerraformDeployWithScriptsRequest {
 
     @NotNull
     @Schema(description = "Configuration information of webhook.")

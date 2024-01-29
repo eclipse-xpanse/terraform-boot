@@ -1,10 +1,11 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * SPDX-FileCopyrightText: Huawei Inc.
- *
  */
 
 package org.eclipse.xpanse.terraform.boot.terraform.utils;
+
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -125,29 +125,34 @@ public class SystemCmd {
         // the output after the buffers are fully read.
         BufferedReader stdoutReader =
                 new BufferedReader(new InputStreamReader(process.getInputStream()));
-        ExecutorService threadToReadStdout = Executors.newSingleThreadExecutor();
-        Future<String> stdOutFuture =
-                threadToReadStdout.submit(
-                        () -> readStream(stdoutReader, contextMap, isCommandOutputToBeLogged));
 
-        BufferedReader stdErrorReader =
-                new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        ExecutorService threadToReadStdErr = Executors.newSingleThreadExecutor();
-        Future<String> stdErrFuture =
-                threadToReadStdErr.submit(
-                        () -> readStream(stdErrorReader, contextMap, isCommandOutputToBeLogged));
+        try (ExecutorService threadToReadStdout = newSingleThreadExecutor()) {
+            Future<String> stdOutFuture =
+                    threadToReadStdout.submit(
+                            () -> readStream(stdoutReader, contextMap, isCommandOutputToBeLogged));
 
-        int count = 0;
-        while (!stdOutFuture.isDone() || !stdErrFuture.isDone()) {
-            if (count++ < 10 || count % 100000 == 0) {
-                log.debug("Command output and error streams are still being read.");
+            BufferedReader stdErrorReader =
+                    new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            Future<String> stdErrFuture;
+            try (ExecutorService threadToReadStdErr = newSingleThreadExecutor()) {
+                stdErrFuture = threadToReadStdErr.submit(
+                        () -> readStream(stdErrorReader, contextMap,
+                                isCommandOutputToBeLogged));
+
+                int count = 0;
+                while (!stdOutFuture.isDone() || !stdErrFuture.isDone()) {
+                    if (count++ < 10 || count % 100000 == 0) {
+                        log.debug("Command output and error streams are still being read.");
+                    }
+                }
+
+                systemCmdResult.setCommandStdError(stdErrFuture.get());
+                systemCmdResult.setCommandStdOutput(stdOutFuture.get());
+                threadToReadStdout.shutdown();
+                threadToReadStdErr.shutdown();
             }
         }
 
-        systemCmdResult.setCommandStdError(stdErrFuture.get());
-        systemCmdResult.setCommandStdOutput(stdOutFuture.get());
-        threadToReadStdout.shutdown();
-        threadToReadStdErr.shutdown();
     }
 
 }
