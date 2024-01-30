@@ -1,7 +1,6 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * SPDX-FileCopyrightText: Huawei Inc.
- *
  */
 
 package org.eclipse.xpanse.terraform.boot.terraform.service;
@@ -13,14 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanWithScriptsRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployWithScriptsRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyWithScriptsRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDeployFromDirectoryRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.async.TerraformAsyncDestroyFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformAsyncDeployFromScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformAsyncDestroyFromScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformDeployWithScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformDestroyWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
@@ -42,16 +41,19 @@ public class TerraformScriptsService extends TerraformDirectoryService {
 
     private final RestTemplate restTemplate;
     private final TerraformExecutor executor;
+    private final TerraformScriptsHelper terraformScriptsHelper;
 
     /**
      * TerraformScriptsService constructor.
      */
     @Autowired
-    public TerraformScriptsService(TerraformExecutor executor, RestTemplate restTemplate) {
-        super(executor);
+    public TerraformScriptsService(TerraformExecutor executor, RestTemplate restTemplate,
+                                   TerraformScriptsHelper terraformScriptsHelper) {
+        super(executor, restTemplate);
         this.executor = executor;
         this.restTemplate = restTemplate;
 
+        this.terraformScriptsHelper = terraformScriptsHelper;
     }
 
     /**
@@ -76,16 +78,16 @@ public class TerraformScriptsService extends TerraformDirectoryService {
      * Method of destroy a service using a script.
      */
     public TerraformResult destroyWithScripts(TerraformDestroyWithScriptsRequest request,
-            UUID uuid) {
+                                              UUID uuid) {
         buildDestroyEnv(request.getScripts(), request.getTfState(), uuid);
         return destroyFromDirectory(request, uuid.toString());
     }
 
     /**
-     * Method of destroy a service using a script.
+     * Method to get terraform plan.
      */
     public TerraformPlan getTerraformPlanFromScripts(TerraformPlanWithScriptsRequest request,
-            UUID uuid) {
+                                                     UUID uuid) {
         buildDeployEnv(request.getScripts(), uuid);
         return getTerraformPlanFromDirectory(request, uuid.toString());
     }
@@ -93,9 +95,9 @@ public class TerraformScriptsService extends TerraformDirectoryService {
     /**
      * Async deploy a source by terraform.
      */
-    @Async("taskExecutor")
+    @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
     public void asyncDeployWithScripts(
-            TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest, UUID uuid) {
+            TerraformAsyncDeployFromScriptsRequest asyncDeployRequest, UUID uuid) {
         TerraformResult result;
         try {
             result = deployWithScripts(asyncDeployRequest, uuid);
@@ -116,9 +118,9 @@ public class TerraformScriptsService extends TerraformDirectoryService {
     /**
      * Async destroy resource of the service.
      */
-    @Async("taskExecutor")
-    public void asyncDestroyWithScripts(TerraformAsyncDestroyFromDirectoryRequest request,
-            UUID uuid) {
+    @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
+    public void asyncDestroyWithScripts(TerraformAsyncDestroyFromScriptsRequest request,
+                                        UUID uuid) {
         TerraformResult result;
         try {
             result = destroyWithScripts(request, uuid);
@@ -145,18 +147,7 @@ public class TerraformScriptsService extends TerraformDirectoryService {
 
     private void buildDestroyEnv(List<String> scripts, String tfState, UUID uuid) {
         buildDeployEnv(scripts, uuid);
-        if (StringUtils.isBlank(tfState)) {
-            throw new TerraformExecutorException("terraform .tfState file create error");
-        }
-        String fileName =
-                executor.getModuleFullPath(uuid.toString()) + File.separator + STATE_FILE_NAME;
-        try (FileWriter scriptWriter = new FileWriter(fileName)) {
-            scriptWriter.write(tfState);
-            log.info("terraform .tfState file create success, fileName: {}", fileName);
-        } catch (IOException ex) {
-            log.error("terraform .tfState file create failed.", ex);
-            throw new TerraformExecutorException("terraform .tfState file create failed.", ex);
-        }
+        terraformScriptsHelper.createTfStateFile(tfState, uuid.toString());
     }
 
     private void buildWorkspace(String workspace) {

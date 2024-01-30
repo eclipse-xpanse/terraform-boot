@@ -9,11 +9,16 @@
 
 # terraform-boot
 
-A spring-boot-based project which aims to provide a RESTful API for Terraform CLI.
+A spring-boot-based project which aims to provide a RESTful API for Terraform CLI. It provides three different modes of 
+execution
+
+1. Scripts in a directory
+2. Scripts in REST request body
+3. Scripts in a GIT repo
 
 ## Modes of Terraform Script Execution
 
-### Scripts in Directory
+### Scripts in a Directory
 
 Pass the terraform root folder name in the request and terraform-boot will execute the requested Terraform method on
 this directory.
@@ -30,10 +35,19 @@ The default root folder where all module sub-folders will exist is the **temp** 
 
 This configuration can be changed by updating the `terraform.root.module.directory` property.
 
-### Scripts in Request
+### Scripts in the Request Body
 
 All files needed for terraform execution can be passed as strings to API and terraform-boot will automatically execute
 the files and return terraform execution result.
+
+### Scripts in GIT Repo
+
+If the scripts are present in a GIT repo, then we can directly pass the details of the GIT repo. Terraform-boot will 
+clone the repo and execute the scripts and then return the result. 
+
+> [!NOTE]
+> Currently supports only repos that can be cloned without authentication and also with HTTP(S) only.
+
 
 ## Supported API Methods
 
@@ -63,7 +77,7 @@ The below property names can be changed in the following ways
 |------------------------------------|------------------------------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | terraform_binary_path              | TERRAFORM_BINARY_PATH              | Terraform available on syspath                   | The path to the terraform binary                                                                                      |
 | terraform.root.module.directory    | TERRAFORM_ROOT_MODULE_DIRECTORY    | /tmp on Linux<br/>\AppData\Local\Temp on Windows | The path to the parent directory where all terraform module directories will be stored at as subdirs                  |
-| log.terraform.stdout.stderr        | LOG_TERRAFORM_STDOUT_STDERR        | false                                            | Controls if the command execution output must be logged. If disabled, the output is only returned in the API response |
+| log.terraform.stdout.stderr        | LOG_TERRAFORM_STDOUT_STDERR        | true                                             | Controls if the command execution output must be logged. If disabled, the output is only returned in the API response |
 | terraform.log.level                | TERRAFORM_LOG_LEVEL                | INFO                                             | Controls the log level of the terraform binary. Allowed values are INFO, DEBUG, TRACE, WARN and ERROR                 |
 | authorization.token.type           | AUTHORIZATION_TOKEN_TYPE           | JWT                                              | Authorization server authentication Type, allowed values: OpaqueToken or JWT                                          |
 | authorization.server.endpoint      | AUTHORIZATION_SERVER_ENDPOINT      |                                                  | The endpoint value of the authorization server                                                                        |

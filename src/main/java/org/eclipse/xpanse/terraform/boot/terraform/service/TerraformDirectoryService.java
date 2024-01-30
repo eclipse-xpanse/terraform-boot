@@ -1,7 +1,6 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * SPDX-FileCopyrightText: Huawei Inc.
- *
  */
 
 package org.eclipse.xpanse.terraform.boot.terraform.service;
@@ -22,21 +21,26 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
 import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
 import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformHealthCheckException;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanFromDirectoryRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDeployFromDirectoryRequest;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformAsyncDeployFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformAsyncDestroyFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDeployFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDestroyFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
 import org.eclipse.xpanse.terraform.boot.terraform.utils.SystemCmdResult;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Terraform service classes are deployed form Directory.
@@ -57,10 +61,12 @@ public class TerraformDirectoryService {
             """;
 
     private final TerraformExecutor executor;
+    private final RestTemplate restTemplate;
 
     @Autowired
-    public TerraformDirectoryService(TerraformExecutor executor) {
+    public TerraformDirectoryService(TerraformExecutor executor, RestTemplate restTemplate) {
         this.executor = executor;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -168,6 +174,53 @@ public class TerraformDirectoryService {
         return TerraformPlan.builder().plan(result).build();
     }
 
+    /**
+     * Async deploy a source by terraform.
+     */
+    @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
+    public void asyncDeployWithScripts(
+            TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest, String moduleDirectory) {
+        TerraformResult result;
+        try {
+            result = deployFromDirectory(asyncDeployRequest, moduleDirectory);
+        } catch (RuntimeException e) {
+            result = TerraformResult.builder()
+                    .commandStdOutput(null)
+                    .commandStdError(e.getMessage())
+                    .isCommandSuccessful(false)
+                    .terraformState(null)
+                    .importantFileContentMap(new HashMap<>())
+                    .build();
+        }
+        String url = asyncDeployRequest.getWebhookConfig().getUrl();
+        log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
+        restTemplate.postForLocation(url, result);
+    }
+
+    /**
+     * Async destroy resource of the service.
+     */
+    @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
+    public void asyncDestroyWithScripts(TerraformAsyncDestroyFromDirectoryRequest request,
+                                        String moduleDirectory) {
+        TerraformResult result;
+        try {
+            result = destroyFromDirectory(request, moduleDirectory);
+        } catch (RuntimeException e) {
+            result = TerraformResult.builder()
+                    .commandStdOutput(null)
+                    .commandStdError(e.getMessage())
+                    .isCommandSuccessful(false)
+                    .terraformState(null)
+                    .importantFileContentMap(new HashMap<>())
+                    .build();
+        }
+
+        String url = request.getWebhookConfig().getUrl();
+        log.info("Destroy service complete, callback POST url:{}, requestBody:{}", url, result);
+        restTemplate.postForLocation(url, result);
+    }
+
     private TerraformResult transSystemCmdResultToTerraformResult(SystemCmdResult result,
             String workspace) {
         TerraformResult terraformResult = TerraformResult.builder().build();
@@ -224,7 +277,7 @@ public class TerraformDirectoryService {
             Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile)
                     .forEach(File::delete);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 

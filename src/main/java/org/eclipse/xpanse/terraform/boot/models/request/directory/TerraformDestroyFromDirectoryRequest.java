@@ -3,7 +3,7 @@
  * SPDX-FileCopyrightText: Huawei Inc.
  */
 
-package org.eclipse.xpanse.terraform.boot.models.request;
+package org.eclipse.xpanse.terraform.boot.models.request.directory;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AdditionalPropertiesValue.TRUE;
 

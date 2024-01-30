@@ -104,4 +104,16 @@ public class TerraformApiExceptionHandler {
         return Response.errorResponse(ResultType.SERVICE_UNAVAILABLE,
                 Collections.singletonList(failMessage));
     }
+
+    /**
+     * Exception handler for GitRepoCloneException.
+     */
+    @ExceptionHandler({GitRepoCloneException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response handleGitRepoCloneException(GitRepoCloneException ex) {
+        log.error("GitRepoCloneException: ", ex);
+        String failMessage = ex.getMessage();
+        return Response.errorResponse(ResultType.INVALID_GIT_REPO_DETAILS,
+                Collections.singletonList(failMessage));
+    }
 }

@@ -1,7 +1,6 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * SPDX-FileCopyrightText: Huawei Inc.
- *
  */
 
 package org.eclipse.xpanse.terraform.boot.async;
@@ -26,19 +25,16 @@ public final class ThreadMdcUtil {
      */
     public static <T> Callable<T> wrap(final Callable<T> callable,
                                        final Map<String, String> context) {
-        return new Callable<>() {
-            @Override
-            public T call() throws Exception {
-                if (context == null) {
-                    MDC.clear();
-                } else {
-                    MDC.setContextMap(context);
-                }
-                try {
-                    return callable.call();
-                } finally {
-                    MDC.clear();
-                }
+        return () -> {
+            if (context == null) {
+                MDC.clear();
+            } else {
+                MDC.setContextMap(context);
+            }
+            try {
+                return callable.call();
+            } finally {
+                MDC.clear();
             }
         };
     }

@@ -1,7 +1,6 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * SPDX-FileCopyrightText: Huawei Inc.
- *
  */
 
 package org.eclipse.xpanse.terraform.boot.async;
@@ -18,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TaskConfiguration {
 
+    public static final String TASK_EXECUTOR_NAME = "taskExecutor";
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
 
     /**
@@ -25,7 +25,7 @@ public class TaskConfiguration {
      *
      * @return executor
      */
-    @Bean("taskExecutor")
+    @Bean(TASK_EXECUTOR_NAME)
     public Executor taskExecutor() {
         ServiceThreadPoolTaskExecutor
                 executor = new ServiceThreadPoolTaskExecutor();

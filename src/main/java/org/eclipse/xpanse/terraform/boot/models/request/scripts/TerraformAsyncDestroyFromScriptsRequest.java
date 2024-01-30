@@ -3,18 +3,20 @@
  * SPDX-FileCopyrightText: Huawei Inc.
  */
 
-package org.eclipse.xpanse.terraform.boot.models.request.async;
+package org.eclipse.xpanse.terraform.boot.models.request.scripts;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.eclipse.xpanse.terraform.boot.models.request.TerraformDestroyWithScriptsRequest;
+import lombok.EqualsAndHashCode;
+import org.eclipse.xpanse.terraform.boot.models.request.webhook.WebhookConfig;
 
 /**
  * Data model for the terraform async destroy requests.
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class TerraformAsyncDestroyFromDirectoryRequest extends TerraformDestroyWithScriptsRequest {
+public class TerraformAsyncDestroyFromScriptsRequest extends TerraformDestroyWithScriptsRequest {
 
     @NotNull
     @Schema(description = "Configuration information of webhook.")

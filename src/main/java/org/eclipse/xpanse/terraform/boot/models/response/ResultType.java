@@ -19,7 +19,8 @@ public enum ResultType {
     TERRAFORM_EXECUTION_FAILED("Terraform Execution Failed"),
     UNSUPPORTED_ENUM_VALUE("Unsupported Enum Value"),
     SERVICE_UNAVAILABLE("Service Unavailable"),
-    UNAUTHORIZED("Unauthorized");
+    UNAUTHORIZED("Unauthorized"),
+    INVALID_GIT_REPO_DETAILS("Invalid Git Repo Details");
 
     private final String value;
 
