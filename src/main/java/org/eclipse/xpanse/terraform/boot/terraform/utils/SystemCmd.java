@@ -67,7 +67,8 @@ public class SystemCmd {
                 }
             }
             if (process.exitValue() != 0) {
-                log.error("SystemCmd process finished with abnormal value.");
+                log.error("SystemCmd process finished with abnormal value {}.",
+                        process.exitValue());
                 systemCmdResult.setCommandSuccessful(false);
             } else {
                 systemCmdResult.setCommandSuccessful(true);
