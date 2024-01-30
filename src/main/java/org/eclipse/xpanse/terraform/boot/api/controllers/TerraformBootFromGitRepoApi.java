@@ -100,7 +100,7 @@ public class TerraformBootFromGitRepoApi {
     @PostMapping(value = "/deploy", produces =
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public TerraformResult deployWithScripts(
+    public TerraformResult deployFromGitRepo(
             @Valid @RequestBody TerraformDeployFromGitRepoRequest request,
             @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
         if (Objects.isNull(uuid)) {
@@ -121,7 +121,7 @@ public class TerraformBootFromGitRepoApi {
     @PostMapping(value = "/destroy", produces =
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public TerraformResult destroyWithScripts(
+    public TerraformResult destroyFromGitRepo(
             @Valid @RequestBody TerraformDestroyFromGitRepoRequest request,
             @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
         if (Objects.isNull(uuid)) {
@@ -140,7 +140,7 @@ public class TerraformBootFromGitRepoApi {
     @PostMapping(value = "/deploy/async", produces =
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void asyncDeployWithScripts(
+    public void asyncDeployFromGitRepo(
             @Valid @RequestBody TerraformAsyncDeployFromGitRepoRequest asyncDeployRequest,
             @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
         if (Objects.isNull(uuid)) {
@@ -159,7 +159,7 @@ public class TerraformBootFromGitRepoApi {
     @DeleteMapping(value = "/destroy/async",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void asyncDestroyWithScripts(
+    public void asyncDestroyFromGitRepo(
             @Valid @RequestBody TerraformAsyncDestroyFromGitRepoRequest asyncDestroyRequest,
             @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
         if (Objects.isNull(uuid)) {
