@@ -65,7 +65,7 @@ public class TerraformBootFromDirectoryApi {
     @Operation(description = "Validate the Terraform modules in the given directory.")
     @GetMapping(value = "/validate/{module_directory}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public TerraformValidationResult validate(
+    public TerraformValidationResult validateFromDirectory(
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
@@ -87,7 +87,7 @@ public class TerraformBootFromDirectoryApi {
     @Operation(description = "Deploy resources via Terraform from the given directory.")
     @PostMapping(value = "/deploy/{module_directory}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public TerraformResult deploy(
+    public TerraformResult deployFromDirectory(
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
@@ -112,7 +112,7 @@ public class TerraformBootFromDirectoryApi {
     @DeleteMapping(value = "/destroy/{module_directory}",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public TerraformResult destroy(
+    public TerraformResult destroyFromDirectory(
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,

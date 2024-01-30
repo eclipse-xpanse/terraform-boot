@@ -58,8 +58,13 @@ public class TerraformBootFromGitRepoApi {
     @PostMapping(value = "/validate", produces =
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public TerraformValidationResult validateWithScripts(
-            @Valid @RequestBody TerraformDeployFromGitRepoRequest request) {
+    public TerraformValidationResult validateScriptsFromGitRepo(
+            @Valid @RequestBody TerraformDeployFromGitRepoRequest request,
+            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
+        if (Objects.isNull(uuid)) {
+            uuid = UUID.randomUUID();
+        }
+        MDC.put("TASK_ID", uuid.toString());
         return terraformGitRepoService.validateWithScripts(request);
     }
 
