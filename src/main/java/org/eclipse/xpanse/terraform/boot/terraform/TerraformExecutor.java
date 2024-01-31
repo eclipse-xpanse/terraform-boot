@@ -158,13 +158,7 @@ public class TerraformExecutor {
      */
     public SystemCmdResult tfValidate(String moduleDirectory) {
         tfInit(moduleDirectory);
-        SystemCmdResult validateResult = tfValidateCommand(getModuleFullPath(moduleDirectory));
-        if (!validateResult.isCommandSuccessful()) {
-            log.error("TFExecutor.tfValidate failed.");
-            throw new TerraformExecutorException("TFExecutor.tfValidate failed.",
-                    validateResult.getCommandStdError());
-        }
-        return validateResult;
+        return tfValidateCommand(getModuleFullPath(moduleDirectory));
     }
 
     /**
