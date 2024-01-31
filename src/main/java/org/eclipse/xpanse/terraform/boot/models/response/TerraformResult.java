@@ -8,6 +8,7 @@ package org.eclipse.xpanse.terraform.boot.models.response;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
+import org.eclipse.xpanse.terraform.boot.models.enums.DestroyScenario;
 
 /**
  * Data model for the Terraform command execution results.
@@ -16,11 +17,10 @@ import lombok.Data;
 @Builder
 public class TerraformResult {
 
+    private DestroyScenario destroyScenario;
     private boolean isCommandSuccessful;
     private String commandStdOutput;
     private String commandStdError;
     private String terraformState;
     private Map<String, String> importantFileContentMap;
-
-
 }

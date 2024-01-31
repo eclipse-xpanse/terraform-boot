@@ -23,6 +23,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
 import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
+import org.eclipse.xpanse.terraform.boot.models.enums.DestroyScenario;
 import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformHealthCheckException;
@@ -120,7 +121,7 @@ public class TerraformDirectoryService {
      * Deploy a source by terraform.
      */
     public TerraformResult deployFromDirectory(TerraformDeployFromDirectoryRequest request,
-            String moduleDirectory) {
+                                               String moduleDirectory) {
         SystemCmdResult result;
         try {
             if (Boolean.TRUE.equals(request.getIsPlanOnly())) {
@@ -137,7 +138,8 @@ public class TerraformDirectoryService {
             result.setCommandStdError(tfEx.getMessage());
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
-        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
+        TerraformResult terraformResult =
+                transSystemCmdResultToTerraformResult(result, workspace, null);
         deleteWorkspace(workspace);
         return terraformResult;
     }
@@ -146,7 +148,7 @@ public class TerraformDirectoryService {
      * Destroy resource of the service.
      */
     public TerraformResult destroyFromDirectory(TerraformDestroyFromDirectoryRequest request,
-            String moduleDirectory) {
+                                                String moduleDirectory) {
         SystemCmdResult result;
         try {
             result = executor.tfDestroy(request.getVariables(),
@@ -158,7 +160,8 @@ public class TerraformDirectoryService {
             result.setCommandStdError(tfEx.getMessage());
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
-        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
+        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(
+                result, workspace, request.getDestroyScenario());
         deleteWorkspace(workspace);
         return terraformResult;
     }
@@ -222,9 +225,11 @@ public class TerraformDirectoryService {
     }
 
     private TerraformResult transSystemCmdResultToTerraformResult(SystemCmdResult result,
-            String workspace) {
+                                                                  String workspace,
+                                                                  DestroyScenario destroyScenario) {
         TerraformResult terraformResult = TerraformResult.builder().build();
         BeanUtils.copyProperties(result, terraformResult);
+        terraformResult.setDestroyScenario(destroyScenario);
         terraformResult.setTerraformState(getTerraformState(workspace));
         terraformResult.setImportantFileContentMap(getImportantFilesContent(workspace));
         return terraformResult;
@@ -234,16 +239,16 @@ public class TerraformDirectoryService {
      * Get the content of the tfState file.
      */
     private String getTerraformState(String workspace) {
-        File tfState = new File(workspace + File.separator + STATE_FILE_NAME);
-        if (!tfState.exists()) {
-            log.info("Terraform state file not exists.");
-            return null;
-        }
+        String state = null;
         try {
-            return Files.readString(tfState.toPath());
+            File tfState = new File(workspace + File.separator + STATE_FILE_NAME);
+            if (tfState.exists()) {
+                state = Files.readString(tfState.toPath());
+            }
         } catch (IOException ex) {
-            throw new TerraformExecutorException("Read state file failed.", ex);
+            log.error("Read state file failed.", ex);
         }
+        return state;
     }
 
     /**
