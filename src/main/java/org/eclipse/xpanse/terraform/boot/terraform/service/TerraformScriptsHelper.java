@@ -39,11 +39,10 @@ public class TerraformScriptsHelper {
         if (StringUtils.isBlank(tfState)) {
             throw new TerraformExecutorException("terraform .tfState file create error");
         }
-        String fileName =
-                terraformExecutor.getModuleFullPath(moduleLocation)
-                        + File.separator
-                        + STATE_FILE_NAME;
-        try (FileWriter scriptWriter = new FileWriter(fileName)) {
+        String fileName = terraformExecutor.getModuleFullPath(moduleLocation)
+                + File.separator + STATE_FILE_NAME;
+        boolean overwrite = new File(fileName).exists();
+        try (FileWriter scriptWriter = new FileWriter(fileName, overwrite)) {
             scriptWriter.write(tfState);
             log.info("terraform .tfState file create success, fileName: {}", fileName);
         } catch (IOException ex) {
