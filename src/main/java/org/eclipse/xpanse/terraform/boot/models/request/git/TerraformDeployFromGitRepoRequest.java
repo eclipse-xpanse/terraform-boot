@@ -6,6 +6,7 @@
 package org.eclipse.xpanse.terraform.boot.models.request.git;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDeployFromDirectoryRequest;
@@ -17,6 +18,7 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDeplo
 @Data
 public class TerraformDeployFromGitRepoRequest extends TerraformDeployFromDirectoryRequest {
 
+    @NotNull
     @Schema(description = "GIT Repo details from where the scripts can be fetched.")
     TerraformScriptGitRepoDetails gitRepoDetails;
 }
