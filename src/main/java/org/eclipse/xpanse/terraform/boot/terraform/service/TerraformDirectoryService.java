@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
 import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
@@ -194,10 +195,13 @@ public class TerraformDirectoryService {
         try {
             result = deployFromDirectory(asyncDeployRequest, moduleDirectory);
         } catch (RuntimeException e) {
-            result =
-                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
-                            .isCommandSuccessful(false).terraformState(null)
-                            .importantFileContentMap(new HashMap<>()).build();
+            result = TerraformResult.builder()
+                    .commandStdOutput(null)
+                    .commandStdError(e.getMessage())
+                    .isCommandSuccessful(false)
+                    .terraformState(null)
+                    .importantFileContentMap(new HashMap<>())
+                    .build();
         }
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
         log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
@@ -214,10 +218,14 @@ public class TerraformDirectoryService {
         try {
             result = destroyFromDirectory(request, moduleDirectory);
         } catch (RuntimeException e) {
-            result =
-                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
-                            .isCommandSuccessful(false).terraformState(null)
-                            .importantFileContentMap(new HashMap<>()).build();
+            result = TerraformResult.builder()
+                    .destroyScenario(request.getDestroyScenario())
+                    .commandStdOutput(null)
+                    .commandStdError(e.getMessage())
+                    .isCommandSuccessful(false)
+                    .terraformState(null)
+                    .importantFileContentMap(new HashMap<>())
+                    .build();
         }
 
         String url = request.getWebhookConfig().getUrl();
@@ -278,12 +286,11 @@ public class TerraformDirectoryService {
     }
 
     private void deleteWorkspace(String workspace) {
-        Path path = Paths.get(workspace);
-        try {
-            Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile)
-                    .forEach(File::delete);
-        } catch (Exception e) {
-            log.error(e.getMessage());
+        Path path = Paths.get(workspace).toAbsolutePath().normalize();
+        try (Stream<Path> pathStream = Files.walk(path)) {
+            pathStream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+        } catch (IOException e) {
+            log.error("Delete workspace:{} error", workspace, e);
         }
     }
 

@@ -126,6 +126,7 @@ public class TerraformScriptsService extends TerraformDirectoryService {
             result = destroyWithScripts(request, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
+                    .destroyScenario(request.getDestroyScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
