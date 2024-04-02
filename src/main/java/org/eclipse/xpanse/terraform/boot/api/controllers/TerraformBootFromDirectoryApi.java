@@ -16,8 +16,10 @@ import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformAsyncDeployFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformAsyncDestroyFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformAsyncModifyFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDeployFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDestroyFromDirectoryRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModifyFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformDirectoryService;
@@ -102,6 +104,30 @@ public class TerraformBootFromDirectoryApi {
     }
 
     /**
+     * Method to modify resources requested in a workspace.
+     *
+     * @return Returns the status of the deployment.
+     */
+    @Tag(name = "TerraformFromDirectory", description =
+            "APIs for running Terraform commands inside a provided directory.")
+    @Operation(description = "Modify resources via Terraform from the given directory.")
+    @PostMapping(value = "/modify/{module_directory}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public TerraformResult modifyFromDirectory(
+            @Parameter(name = "module_directory",
+                    description = "directory name where the Terraform module files exist.")
+            @PathVariable("module_directory") String moduleDirectory,
+            @Valid @RequestBody
+                    TerraformModifyFromDirectoryRequest request,
+            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
+        if (Objects.isNull(uuid)) {
+            uuid = UUID.randomUUID();
+        }
+        MDC.put("TASK_ID", uuid.toString());
+        return terraformDirectoryService.modifyFromDirectory(request, moduleDirectory);
+    }
+
+    /**
      * Method to destroy resources requested in a workspace.
      *
      * @return Returns the status of the resources destroy.
@@ -171,6 +197,28 @@ public class TerraformBootFromDirectoryApi {
         }
         MDC.put("TASK_ID", uuid.toString());
         terraformDirectoryService.asyncDeployWithScripts(asyncDeployRequest, moduleDirectory);
+    }
+
+    /**
+     * Method to async modify resources from the given directory.
+     */
+    @Tag(name = "TerraformFromDirectory", description =
+            "APIs for running Terraform commands inside a provided directory.")
+    @Operation(description = "async modify resources via Terraform from the given directory.")
+    @PostMapping(value = "/modify/async/{module_directory}", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void asyncModifyFromDirectory(
+            @Parameter(name = "module_directory",
+                    description = "directory name where the Terraform module files exist.")
+            @PathVariable("module_directory") String moduleDirectory,
+            @Valid @RequestBody TerraformAsyncModifyFromDirectoryRequest asyncModifyRequest,
+            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
+        if (Objects.isNull(uuid)) {
+            uuid = UUID.randomUUID();
+        }
+        MDC.put("TASK_ID", uuid.toString());
+        terraformDirectoryService.asyncModifyWithScripts(asyncModifyRequest, moduleDirectory);
     }
 
     /**

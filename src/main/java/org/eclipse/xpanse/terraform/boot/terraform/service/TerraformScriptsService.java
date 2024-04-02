@@ -18,8 +18,10 @@ import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformAsyncDeployFromScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformAsyncDestroyFromScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformAsyncModifyFromScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformDeployWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformDestroyWithScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformModifyWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
@@ -75,6 +77,14 @@ public class TerraformScriptsService extends TerraformDirectoryService {
     }
 
     /**
+     * Method of modify a service using a script.
+     */
+    public TerraformResult modifyWithScripts(TerraformModifyWithScriptsRequest request, UUID uuid) {
+        buildModifyEnv(request.getScripts(), request.getTfState(), uuid);
+        return modifyFromDirectory(request, uuid.toString());
+    }
+
+    /**
      * Method of destroy a service using a script.
      */
     public TerraformResult destroyWithScripts(TerraformDestroyWithScriptsRequest request,
@@ -103,6 +113,7 @@ public class TerraformScriptsService extends TerraformDirectoryService {
             result = deployWithScripts(asyncDeployRequest, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
+                    .deploymentScenario(asyncDeployRequest.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -112,6 +123,30 @@ public class TerraformScriptsService extends TerraformDirectoryService {
         }
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
         log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
+        restTemplate.postForLocation(url, result);
+    }
+
+    /**
+     * Async modify a source by terraform.
+     */
+    @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
+    public void asyncModifyWithScripts(
+            TerraformAsyncModifyFromScriptsRequest asyncModifyRequest, UUID uuid) {
+        TerraformResult result;
+        try {
+            result = modifyWithScripts(asyncModifyRequest, uuid);
+        } catch (RuntimeException e) {
+            result = TerraformResult.builder()
+                    .deploymentScenario(asyncModifyRequest.getDeploymentScenario())
+                    .commandStdOutput(null)
+                    .commandStdError(e.getMessage())
+                    .isCommandSuccessful(false)
+                    .terraformState(null)
+                    .importantFileContentMap(new HashMap<>())
+                    .build();
+        }
+        String url = asyncModifyRequest.getWebhookConfig().getUrl();
+        log.info("Modify service complete, callback POST url:{}, requestBody:{}", url, result);
         restTemplate.postForLocation(url, result);
     }
 
@@ -126,7 +161,7 @@ public class TerraformScriptsService extends TerraformDirectoryService {
             result = destroyWithScripts(request, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .destroyScenario(request.getDestroyScenario())
+                    .deploymentScenario(request.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -144,6 +179,11 @@ public class TerraformScriptsService extends TerraformDirectoryService {
         String workspace = executor.getModuleFullPath(uuid.toString());
         buildWorkspace(workspace);
         buildScriptFiles(workspace, uuid, scripts);
+    }
+
+    private void buildModifyEnv(List<String> scripts, String tfState, UUID uuid) {
+        buildDeployEnv(scripts, uuid);
+        terraformScriptsHelper.createTfStateFile(tfState, uuid.toString());
     }
 
     private void buildDestroyEnv(List<String> scripts, String tfState, UUID uuid) {
