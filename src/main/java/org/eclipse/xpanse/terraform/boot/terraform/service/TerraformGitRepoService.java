@@ -27,8 +27,10 @@ import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformAsyncDeployFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformAsyncDestroyFromGitRepoRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformAsyncModifyFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformDeployFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformDestroyFromGitRepoRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformModifyFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformScriptGitRepoDetails;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
@@ -93,6 +95,16 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
     }
 
     /**
+     * Method of modify a service using a script.
+     */
+    public TerraformResult modifyFromGitRepo(TerraformModifyFromGitRepoRequest request, UUID uuid) {
+        uuid = getUuidToCreateEmptyWorkspace(uuid);
+        buildModifyEnv(request.getGitRepoDetails(), request.getTfState(), uuid);
+        return modifyFromDirectory(request,
+                getScriptsLocationInRepo(request.getGitRepoDetails(), uuid));
+    }
+
+    /**
      * Method of destroy a service using a script.
      */
     public TerraformResult destroyFromGitRepo(TerraformDestroyFromGitRepoRequest request,
@@ -114,6 +126,7 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
             result = deployFromGitRepo(asyncDeployRequest, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
+                    .deploymentScenario(asyncDeployRequest.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -127,6 +140,31 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
     }
 
     /**
+     * Async modify a source by terraform.
+     */
+    @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
+    public void asyncModifyFromGitRepo(TerraformAsyncModifyFromGitRepoRequest asyncModifyRequest,
+                                       UUID uuid) {
+        TerraformResult result;
+        try {
+            result = modifyFromGitRepo(asyncModifyRequest, uuid);
+        } catch (RuntimeException e) {
+            result = TerraformResult.builder()
+                    .deploymentScenario(asyncModifyRequest.getDeploymentScenario())
+                    .commandStdOutput(null)
+                    .commandStdError(e.getMessage())
+                    .isCommandSuccessful(false)
+                    .terraformState(null)
+                    .importantFileContentMap(new HashMap<>())
+                    .build();
+        }
+        String url = asyncModifyRequest.getWebhookConfig().getUrl();
+        log.info("Modify service complete, callback POST url:{}, requestBody:{}", url, result);
+        restTemplate.postForLocation(url, result);
+    }
+
+
+    /**
      * Async destroy resource of the service.
      */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
@@ -137,7 +175,7 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
             result = destroyFromGitRepo(request, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .destroyScenario(request.getDestroyScenario())
+                    .deploymentScenario(request.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -156,6 +194,13 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
         String workspace = executor.getModuleFullPath(uuid.toString());
         buildWorkspace(workspace);
         extractScripts(workspace, terraformScriptGitRepoDetails);
+    }
+
+    private void buildModifyEnv(TerraformScriptGitRepoDetails terraformScriptGitRepoDetails,
+                                String tfState, UUID uuid) {
+        buildDeployEnv(terraformScriptGitRepoDetails, uuid);
+        terraformScriptsHelper.createTfStateFile(tfState,
+                uuid + File.separator + terraformScriptGitRepoDetails.getScriptPath());
     }
 
     private void buildDestroyEnv(TerraformScriptGitRepoDetails terraformScriptGitRepoDetails,

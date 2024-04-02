@@ -15,8 +15,10 @@ import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformAsyncDeployFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformAsyncDestroyFromGitRepoRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformAsyncModifyFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformDeployFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformDestroyFromGitRepoRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformModifyFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformGitRepoService;
@@ -111,6 +113,27 @@ public class TerraformBootFromGitRepoApi {
     }
 
     /**
+     * Method to modify resources using scripts from the GIT Repo provided.
+     *
+     * @return Returns the status of the deployment.
+     */
+    @Tag(name = "TerraformFromGitRepo", description =
+            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    @Operation(description = "Modify resources via Terraform")
+    @PostMapping(value = "/modify", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public TerraformResult modifyFromGitRepo(
+            @Valid @RequestBody TerraformModifyFromGitRepoRequest request,
+            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
+        if (Objects.isNull(uuid)) {
+            uuid = UUID.randomUUID();
+        }
+        MDC.put("TASK_ID", uuid.toString());
+        return terraformGitRepoService.modifyFromGitRepo(request, uuid);
+    }
+
+    /**
      * MMethod to deploy resources using scripts from the GIT Repo provided.
      *
      * @return Returns the status of to Destroy.
@@ -148,6 +171,25 @@ public class TerraformBootFromGitRepoApi {
         }
         MDC.put("TASK_ID", uuid.toString());
         terraformGitRepoService.asyncDeployFromGitRepo(asyncDeployRequest, uuid);
+    }
+
+    /**
+     * Method to async modify resources from the provided GIT Repo.
+     */
+    @Tag(name = "TerraformFromGitRepo", description =
+            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    @Operation(description = "async deploy resources via Terraform")
+    @PostMapping(value = "/modify/async", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void asyncModifyFromGitRepo(
+            @Valid @RequestBody TerraformAsyncModifyFromGitRepoRequest asyncModifyRequest,
+            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
+        if (Objects.isNull(uuid)) {
+            uuid = UUID.randomUUID();
+        }
+        MDC.put("TASK_ID", uuid.toString());
+        terraformGitRepoService.asyncModifyFromGitRepo(asyncModifyRequest, uuid);
     }
 
     /**

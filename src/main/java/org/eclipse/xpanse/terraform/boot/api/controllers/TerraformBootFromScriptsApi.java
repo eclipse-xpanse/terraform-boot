@@ -15,8 +15,10 @@ import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformAsyncDeployFromScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformAsyncDestroyFromScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformAsyncModifyFromScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformDeployWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformDestroyWithScriptsRequest;
+import org.eclipse.xpanse.terraform.boot.models.request.scripts.TerraformModifyWithScriptsRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformScriptsService;
@@ -90,6 +92,27 @@ public class TerraformBootFromScriptsApi {
     }
 
     /**
+     * Method to modify resources by scripts.
+     *
+     * @return Returns the status of the deployment.
+     */
+    @Tag(name = "TerraformFromScripts", description =
+            "APIs for running Terraform commands on the scripts sent via request body.")
+    @Operation(description = "Modify resources via Terraform")
+    @PostMapping(value = "/modify", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public TerraformResult modifyWithScripts(
+            @Valid @RequestBody TerraformModifyWithScriptsRequest request,
+            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
+        if (Objects.isNull(uuid)) {
+            uuid = UUID.randomUUID();
+        }
+        MDC.put("TASK_ID", uuid.toString());
+        return terraformScriptsService.modifyWithScripts(request, uuid);
+    }
+
+    /**
      * Method to destroy resources by scripts.
      *
      * @return Returns the status of to Destroy.
@@ -127,6 +150,25 @@ public class TerraformBootFromScriptsApi {
         }
         MDC.put("TASK_ID", uuid.toString());
         terraformScriptsService.asyncDeployWithScripts(asyncDeployRequest, uuid);
+    }
+
+    /**
+     * Method to async modify resources by scripts.
+     */
+    @Tag(name = "TerraformFromScripts", description =
+            "APIs for running Terraform commands on the scripts sent via request body.")
+    @Operation(description = "async modify resources via Terraform")
+    @PostMapping(value = "/modify/async", produces =
+            MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void asyncModifyWithScripts(
+            @Valid @RequestBody TerraformAsyncModifyFromScriptsRequest asyncModifyRequest,
+            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
+        if (Objects.isNull(uuid)) {
+            uuid = UUID.randomUUID();
+        }
+        MDC.put("TASK_ID", uuid.toString());
+        terraformScriptsService.asyncModifyWithScripts(asyncModifyRequest, uuid);
     }
 
     /**
