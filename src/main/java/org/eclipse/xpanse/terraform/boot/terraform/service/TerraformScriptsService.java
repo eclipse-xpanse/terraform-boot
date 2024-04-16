@@ -39,8 +39,6 @@ import org.springframework.web.client.RestTemplate;
 public class TerraformScriptsService extends TerraformDirectoryService {
 
     private static final String FILE_SUFFIX = ".tf";
-    private static final String STATE_FILE_NAME = "terraform.tfstate";
-
     private final RestTemplate restTemplate;
     private final TerraformExecutor executor;
     private final TerraformScriptsHelper terraformScriptsHelper;
@@ -113,7 +111,6 @@ public class TerraformScriptsService extends TerraformDirectoryService {
             result = deployWithScripts(asyncDeployRequest, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .deploymentScenario(asyncDeployRequest.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -137,7 +134,6 @@ public class TerraformScriptsService extends TerraformDirectoryService {
             result = modifyWithScripts(asyncModifyRequest, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .deploymentScenario(asyncModifyRequest.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -161,7 +157,6 @@ public class TerraformScriptsService extends TerraformDirectoryService {
             result = destroyWithScripts(request, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .deploymentScenario(request.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)

@@ -10,7 +10,6 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
-import org.eclipse.xpanse.terraform.boot.models.enums.DeploymentScenario;
 
 /**
  * Data model for the Terraform command execution results.
@@ -19,12 +18,6 @@ import org.eclipse.xpanse.terraform.boot.models.enums.DeploymentScenario;
 @Builder
 public class TerraformResult {
 
-    @Schema(description = "This value can be set by the client if they wish to know the type of"
-            + "request for which the callback response is generated from terraform-boot. There will"
-            + "be no difference in the way request is executed. This information is only set in"
-            + "the callback response again for the client to handle the callback response"
-            + "accordingly.")
-    private DeploymentScenario deploymentScenario;
     @Schema(description = "defines if the command was successfully executed")
     @NotNull
     private boolean isCommandSuccessful;

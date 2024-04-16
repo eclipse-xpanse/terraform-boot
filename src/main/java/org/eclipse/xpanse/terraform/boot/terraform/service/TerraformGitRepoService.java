@@ -126,7 +126,6 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
             result = deployFromGitRepo(asyncDeployRequest, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .deploymentScenario(asyncDeployRequest.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -150,7 +149,6 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
             result = modifyFromGitRepo(asyncModifyRequest, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .deploymentScenario(asyncModifyRequest.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -175,7 +173,6 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
             result = destroyFromGitRepo(request, uuid);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .deploymentScenario(request.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
