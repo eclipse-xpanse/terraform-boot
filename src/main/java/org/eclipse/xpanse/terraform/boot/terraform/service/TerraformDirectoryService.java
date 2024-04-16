@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
 import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
-import org.eclipse.xpanse.terraform.boot.models.enums.DeploymentScenario;
 import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformHealthCheckException;
@@ -145,9 +144,7 @@ public class TerraformDirectoryService {
             result.setCommandStdError(tfEx.getMessage());
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
-        TerraformResult terraformResult =
-                transSystemCmdResultToTerraformResult(result, workspace,
-                        request.getDeploymentScenario());
+        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
         if (cleanWorkspaceAfterDeployment) {
             deleteWorkspace(workspace);
         }
@@ -175,9 +172,7 @@ public class TerraformDirectoryService {
             result.setCommandStdError(tfEx.getMessage());
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
-        TerraformResult terraformResult =
-                transSystemCmdResultToTerraformResult(result, workspace,
-                        request.getDeploymentScenario());
+        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
         if (cleanWorkspaceAfterDeployment) {
             deleteWorkspace(workspace);
         }
@@ -200,8 +195,7 @@ public class TerraformDirectoryService {
             result.setCommandStdError(tfEx.getMessage());
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
-        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace,
-                request.getDeploymentScenario());
+        TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
         deleteWorkspace(workspace);
         return terraformResult;
     }
@@ -275,7 +269,6 @@ public class TerraformDirectoryService {
             result = destroyFromDirectory(request, moduleDirectory);
         } catch (RuntimeException e) {
             result = TerraformResult.builder()
-                    .deploymentScenario(request.getDeploymentScenario())
                     .commandStdOutput(null)
                     .commandStdError(e.getMessage())
                     .isCommandSuccessful(false)
@@ -290,12 +283,9 @@ public class TerraformDirectoryService {
     }
 
     private TerraformResult transSystemCmdResultToTerraformResult(SystemCmdResult result,
-                                                                  String workspace,
-                                                                  DeploymentScenario
-                                                                          deploymentScenario) {
+                                                                  String workspace) {
         TerraformResult terraformResult = TerraformResult.builder().build();
         BeanUtils.copyProperties(result, terraformResult);
-        terraformResult.setDeploymentScenario(deploymentScenario);
         terraformResult.setTerraformState(getTerraformState(workspace));
         terraformResult.setImportantFileContentMap(getImportantFilesContent(workspace));
         return terraformResult;
