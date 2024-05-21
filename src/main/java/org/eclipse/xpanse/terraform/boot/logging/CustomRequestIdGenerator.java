@@ -16,10 +16,12 @@ import org.zalando.logbook.HttpRequest;
  */
 public class CustomRequestIdGenerator implements CorrelationId {
 
+    public static final String REQUEST_ID = "REQUEST_ID";
+
     @Override
     public String generate(@NonNull HttpRequest request) {
         String uuid = UUID.randomUUID().toString();
-        MDC.put("TASK_ID", uuid);
+        MDC.put(REQUEST_ID, uuid);
         return uuid;
     }
 }

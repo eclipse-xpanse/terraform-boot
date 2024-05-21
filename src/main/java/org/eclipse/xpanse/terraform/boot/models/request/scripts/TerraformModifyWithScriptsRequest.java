@@ -8,6 +8,7 @@ package org.eclipse.xpanse.terraform.boot.models.request.scripts;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import java.util.UUID;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModifyFromDirectoryRequest;
@@ -18,6 +19,10 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModif
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformModifyWithScriptsRequest extends TerraformModifyFromDirectoryRequest {
+
+    @Schema(description = "Id of the request.")
+    UUID taskId;
+
     @NotNull
     @Schema(description = "List of script files for modify requests deployed via scripts")
     private List<String> scripts;

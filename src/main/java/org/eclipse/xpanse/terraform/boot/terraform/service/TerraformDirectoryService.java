@@ -176,6 +176,7 @@ public class TerraformDirectoryService {
         if (cleanWorkspaceAfterDeployment) {
             deleteWorkspace(workspace);
         }
+        terraformResult.setRequestId(request.getRequestId());
         return terraformResult;
     }
 
@@ -197,6 +198,7 @@ public class TerraformDirectoryService {
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
         deleteWorkspace(workspace);
+        terraformResult.setRequestId(request.getRequestId());
         return terraformResult;
     }
 
@@ -230,6 +232,7 @@ public class TerraformDirectoryService {
                     .importantFileContentMap(new HashMap<>())
                     .build();
         }
+        result.setRequestId(asyncDeployRequest.getRequestId());
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
         log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
         restTemplate.postForLocation(url, result);
@@ -253,6 +256,7 @@ public class TerraformDirectoryService {
                     .importantFileContentMap(new HashMap<>())
                     .build();
         }
+        result.setRequestId(asyncModifyRequest.getRequestId());
         String url = asyncModifyRequest.getWebhookConfig().getUrl();
         log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
         restTemplate.postForLocation(url, result);
@@ -276,7 +280,7 @@ public class TerraformDirectoryService {
                     .importantFileContentMap(new HashMap<>())
                     .build();
         }
-
+        result.setRequestId(request.getRequestId());
         String url = request.getWebhookConfig().getUrl();
         log.info("Destroy service complete, callback POST url:{}, requestBody:{}", url, result);
         restTemplate.postForLocation(url, result);

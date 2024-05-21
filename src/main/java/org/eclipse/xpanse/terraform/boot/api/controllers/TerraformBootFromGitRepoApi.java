@@ -5,6 +5,8 @@
 
 package org.eclipse.xpanse.terraform.boot.api.controllers;
 
+import static org.eclipse.xpanse.terraform.boot.logging.CustomRequestIdGenerator.REQUEST_ID;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,7 +31,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,12 +62,11 @@ public class TerraformBootFromGitRepoApi {
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformValidationResult validateScriptsFromGitRepo(
-            @Valid @RequestBody TerraformDeployFromGitRepoRequest request,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @Valid @RequestBody TerraformDeployFromGitRepoRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformGitRepoService.validateWithScripts(request);
     }
 
@@ -82,12 +82,11 @@ public class TerraformBootFromGitRepoApi {
     @PostMapping(value = "/plan", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformPlan planFromGitRepo(
-            @Valid @RequestBody TerraformPlanFromGitRepoRequest request,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @Valid @RequestBody TerraformPlanFromGitRepoRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformGitRepoService.getTerraformPlanFromGitRepo(request, uuid);
     }
 
@@ -103,12 +102,11 @@ public class TerraformBootFromGitRepoApi {
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult deployFromGitRepo(
-            @Valid @RequestBody TerraformDeployFromGitRepoRequest request,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @Valid @RequestBody TerraformDeployFromGitRepoRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformGitRepoService.deployFromGitRepo(request, uuid);
     }
 
@@ -124,12 +122,11 @@ public class TerraformBootFromGitRepoApi {
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult modifyFromGitRepo(
-            @Valid @RequestBody TerraformModifyFromGitRepoRequest request,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @Valid @RequestBody TerraformModifyFromGitRepoRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformGitRepoService.modifyFromGitRepo(request, uuid);
     }
 
@@ -145,12 +142,11 @@ public class TerraformBootFromGitRepoApi {
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult destroyFromGitRepo(
-            @Valid @RequestBody TerraformDestroyFromGitRepoRequest request,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @Valid @RequestBody TerraformDestroyFromGitRepoRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformGitRepoService.destroyFromGitRepo(request, uuid);
     }
 
@@ -164,13 +160,12 @@ public class TerraformBootFromGitRepoApi {
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncDeployFromGitRepo(
-            @Valid @RequestBody TerraformAsyncDeployFromGitRepoRequest asyncDeployRequest,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
-        terraformGitRepoService.asyncDeployFromGitRepo(asyncDeployRequest, uuid);
+            @Valid @RequestBody TerraformAsyncDeployFromGitRepoRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
+        terraformGitRepoService.asyncDeployFromGitRepo(request, uuid);
     }
 
     /**
@@ -183,13 +178,12 @@ public class TerraformBootFromGitRepoApi {
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncModifyFromGitRepo(
-            @Valid @RequestBody TerraformAsyncModifyFromGitRepoRequest asyncModifyRequest,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
-        terraformGitRepoService.asyncModifyFromGitRepo(asyncModifyRequest, uuid);
+            @Valid @RequestBody TerraformAsyncModifyFromGitRepoRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
+        terraformGitRepoService.asyncModifyFromGitRepo(request, uuid);
     }
 
     /**
@@ -202,12 +196,11 @@ public class TerraformBootFromGitRepoApi {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncDestroyFromGitRepo(
-            @Valid @RequestBody TerraformAsyncDestroyFromGitRepoRequest asyncDestroyRequest,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
-        terraformGitRepoService.asyncDestroyFromGitRepo(asyncDestroyRequest, uuid);
+            @Valid @RequestBody TerraformAsyncDestroyFromGitRepoRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
+        terraformGitRepoService.asyncDestroyFromGitRepo(request, uuid);
     }
 }
