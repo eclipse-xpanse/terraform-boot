@@ -8,6 +8,7 @@ package org.eclipse.xpanse.terraform.boot.models.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,8 +19,10 @@ import lombok.Data;
 @Builder
 public class TerraformResult {
 
-    @Schema(description = "defines if the command was successfully executed")
+    @Schema(description = "Id of the request")
+    UUID requestId;
     @NotNull
+    @Schema(description = "defines if the command was successfully executed")
     private boolean isCommandSuccessful;
     @Schema(description = "stdout of the command returned as string.")
     private String commandStdOutput;

@@ -5,6 +5,8 @@
 
 package org.eclipse.xpanse.terraform.boot.api.controllers;
 
+import static org.eclipse.xpanse.terraform.boot.logging.CustomRequestIdGenerator.REQUEST_ID;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -70,12 +72,9 @@ public class TerraformBootFromDirectoryApi {
     public TerraformValidationResult validateFromDirectory(
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @PathVariable("module_directory") String moduleDirectory) {
+        UUID uuid = UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
         return terraformDirectoryService.tfValidateFromDirectory(moduleDirectory);
     }
 
@@ -93,13 +92,11 @@ public class TerraformBootFromDirectoryApi {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody
-            TerraformDeployFromDirectoryRequest request,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @Valid @RequestBody TerraformDeployFromDirectoryRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformDirectoryService.deployFromDirectory(request, moduleDirectory);
     }
 
@@ -117,13 +114,11 @@ public class TerraformBootFromDirectoryApi {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody
-                    TerraformModifyFromDirectoryRequest request,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @Valid @RequestBody TerraformModifyFromDirectoryRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformDirectoryService.modifyFromDirectory(request, moduleDirectory);
     }
 
@@ -142,13 +137,11 @@ public class TerraformBootFromDirectoryApi {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody
-            TerraformDestroyFromDirectoryRequest request,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+            @Valid @RequestBody TerraformDestroyFromDirectoryRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformDirectoryService.destroyFromDirectory(request, moduleDirectory);
     }
 
@@ -169,10 +162,10 @@ public class TerraformBootFromDirectoryApi {
             @PathVariable("module_directory") String moduleDirectory,
             @Valid @RequestBody TerraformPlanFromDirectoryRequest request,
             @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
+        uuid = Objects.nonNull(request.getRequestId()) ? request.getRequestId()
+                : (Objects.nonNull(uuid) ? uuid : UUID.randomUUID());
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
         return terraformDirectoryService.getTerraformPlanFromDirectory(request,
                 moduleDirectory);
     }
@@ -190,13 +183,12 @@ public class TerraformBootFromDirectoryApi {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
-        terraformDirectoryService.asyncDeployWithScripts(asyncDeployRequest, moduleDirectory);
+            @Valid @RequestBody TerraformAsyncDeployFromDirectoryRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
+        terraformDirectoryService.asyncDeployWithScripts(request, moduleDirectory);
     }
 
     /**
@@ -212,13 +204,12 @@ public class TerraformBootFromDirectoryApi {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody TerraformAsyncModifyFromDirectoryRequest asyncModifyRequest,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
-        terraformDirectoryService.asyncModifyWithScripts(asyncModifyRequest, moduleDirectory);
+            @Valid @RequestBody TerraformAsyncModifyFromDirectoryRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
+        terraformDirectoryService.asyncModifyWithScripts(request, moduleDirectory);
     }
 
     /**
@@ -234,12 +225,11 @@ public class TerraformBootFromDirectoryApi {
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
             @PathVariable("module_directory") String moduleDirectory,
-            @Valid @RequestBody TerraformAsyncDestroyFromDirectoryRequest asyncDestroyRequest,
-            @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        if (Objects.isNull(uuid)) {
-            uuid = UUID.randomUUID();
-        }
-        MDC.put("TASK_ID", uuid.toString());
-        terraformDirectoryService.asyncDestroyWithScripts(asyncDestroyRequest, moduleDirectory);
+            @Valid @RequestBody TerraformAsyncDestroyFromDirectoryRequest request) {
+        UUID uuid = Objects.nonNull(request.getRequestId())
+                ? request.getRequestId() : UUID.randomUUID();
+        MDC.put(REQUEST_ID, uuid.toString());
+        request.setRequestId(uuid);
+        terraformDirectoryService.asyncDestroyWithScripts(request, moduleDirectory);
     }
 }

@@ -13,15 +13,10 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jgit.api.CloneCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
-import org.eclipse.xpanse.terraform.boot.models.exceptions.GitRepoCloneException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanFromGitRepoRequest;
@@ -50,16 +45,19 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
     private final RestTemplate restTemplate;
     private final TerraformExecutor executor;
     private final TerraformScriptsHelper terraformScriptsHelper;
+    private final ScriptsGitRepoManage scriptsGitRepoManage;
 
     /**
      * Constructor for TerraformGitRepoService bean.
      */
     public TerraformGitRepoService(TerraformExecutor executor, RestTemplate restTemplate,
-                                   TerraformScriptsHelper terraformScriptsHelper) {
+                                   TerraformScriptsHelper terraformScriptsHelper,
+                                   ScriptsGitRepoManage scriptsGitRepoManage) {
         super(executor, restTemplate);
         this.restTemplate = restTemplate;
         this.executor = executor;
         this.terraformScriptsHelper = terraformScriptsHelper;
+        this.scriptsGitRepoManage = scriptsGitRepoManage;
     }
 
     /**
@@ -133,6 +131,7 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
                     .importantFileContentMap(new HashMap<>())
                     .build();
         }
+        result.setRequestId(asyncDeployRequest.getRequestId());
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
         log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
         restTemplate.postForLocation(url, result);
@@ -156,6 +155,7 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
                     .importantFileContentMap(new HashMap<>())
                     .build();
         }
+        result.setRequestId(asyncModifyRequest.getRequestId());
         String url = asyncModifyRequest.getWebhookConfig().getUrl();
         log.info("Modify service complete, callback POST url:{}, requestBody:{}", url, result);
         restTemplate.postForLocation(url, result);
@@ -180,7 +180,7 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
                     .importantFileContentMap(new HashMap<>())
                     .build();
         }
-
+        result.setRequestId(request.getRequestId());
         String url = request.getWebhookConfig().getUrl();
         log.info("Destroy service complete, callback POST url:{}, requestBody:{}", url, result);
         restTemplate.postForLocation(url, result);
@@ -190,7 +190,7 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
                                 UUID uuid) {
         String workspace = executor.getModuleFullPath(uuid.toString());
         buildWorkspace(workspace);
-        extractScripts(workspace, terraformScriptGitRepoDetails);
+        scriptsGitRepoManage.checkoutScripts(workspace, terraformScriptGitRepoDetails);
     }
 
     private void buildModifyEnv(TerraformScriptGitRepoDetails terraformScriptGitRepoDetails,
@@ -229,37 +229,6 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
         log.info("workspace create success, Working directory is " + ws.getAbsolutePath());
     }
 
-    private void extractScripts(String workspace, TerraformScriptGitRepoDetails scriptsRepo) {
-        log.info("Cloning scripts from GIT repo:{} to workspace:{}", scriptsRepo.getRepoUrl(),
-                workspace);
-        File workspaceDirectory = new File(workspace);
-        FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
-        repositoryBuilder.findGitDir(workspaceDirectory);
-        if (Objects.isNull(repositoryBuilder.getGitDir())) {
-            CloneCommand cloneCommand = new CloneCommand();
-            cloneCommand.setURI(scriptsRepo.getRepoUrl());
-            cloneCommand.setProgressMonitor(null);
-            cloneCommand.setDirectory(workspaceDirectory);
-            cloneCommand.setBranch(scriptsRepo.getBranch());
-            boolean cloneSuccess = false;
-            int retryCount = 0;
-            String errMsg = "";
-            while (!cloneSuccess && retryCount < MAX_RETRY_COUNT) {
-                try {
-                    cloneCommand.call();
-                    cloneSuccess = true;
-                } catch (GitAPIException e) {
-                    retryCount++;
-                    errMsg =
-                            String.format("Cloning scripts form GIT repo error:%s", e.getMessage());
-                    log.error(errMsg);
-                }
-            }
-            if (!cloneSuccess) {
-                throw new GitRepoCloneException(errMsg);
-            }
-        }
-    }
 
     private String getScriptsLocationInRepo(
             TerraformScriptGitRepoDetails terraformScriptGitRepoDetails, UUID uuid) {
