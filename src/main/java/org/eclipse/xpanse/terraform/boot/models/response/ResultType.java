@@ -20,7 +20,8 @@ public enum ResultType {
     UNSUPPORTED_ENUM_VALUE("Unsupported Enum Value"),
     SERVICE_UNAVAILABLE("Service Unavailable"),
     UNAUTHORIZED("Unauthorized"),
-    INVALID_GIT_REPO_DETAILS("Invalid Git Repo Details");
+    INVALID_GIT_REPO_DETAILS("Invalid Git Repo Details"),
+    INVALID_TERRAFORM_TOOL("Invalid Terraform Tool");
 
     private final String value;
 

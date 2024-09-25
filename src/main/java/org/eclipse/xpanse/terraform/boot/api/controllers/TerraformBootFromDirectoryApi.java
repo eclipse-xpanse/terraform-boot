@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDestr
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModifyFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
+import org.eclipse.xpanse.terraform.boot.terraform.TerraformVersionHelper;
 import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformDirectoryService;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,15 +70,20 @@ public class TerraformBootFromDirectoryApi {
     @Tag(name = "TerraformFromDirectory", description =
             "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "Validate the Terraform modules in the given directory.")
-    @GetMapping(value = "/validate/{module_directory}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/validate/{module_directory}/{terraform_version}", produces =
+            MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformValidationResult validateFromDirectory(
             @Parameter(name = "module_directory",
                     description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory) {
+            @PathVariable("module_directory") String moduleDirectory,
+            @Parameter(name = "terraform_version",
+                    description = "version of Terraform to execute the module files.")
+            @NotBlank @Pattern(regexp = TerraformVersionHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
+            @PathVariable("terraform_version") String terraformVersion) {
         UUID uuid = UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
-        return terraformDirectoryService.tfValidateFromDirectory(moduleDirectory);
+        return terraformDirectoryService.tfValidateFromDirectory(moduleDirectory, terraformVersion);
     }
 
     /**

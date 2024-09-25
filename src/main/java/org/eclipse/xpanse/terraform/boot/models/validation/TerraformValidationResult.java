@@ -16,6 +16,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TerraformValidationResult {
 
+    private String terraformVersion;
     private boolean valid;
     private List<TerraformValidateDiagnostics> diagnostics;
 }

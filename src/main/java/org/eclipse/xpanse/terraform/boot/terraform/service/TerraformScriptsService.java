@@ -63,7 +63,7 @@ public class TerraformScriptsService extends TerraformDirectoryService {
             TerraformDeployWithScriptsRequest request) {
         UUID uuid = UUID.randomUUID();
         buildDeployEnv(request.getScripts(), uuid);
-        return tfValidateFromDirectory(uuid.toString());
+        return tfValidateFromDirectory(uuid.toString(), request.getTerraformVersion());
     }
 
     /**

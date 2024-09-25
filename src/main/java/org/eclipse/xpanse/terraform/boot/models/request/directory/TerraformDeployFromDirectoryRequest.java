@@ -6,11 +6,14 @@
 package org.eclipse.xpanse.terraform.boot.models.request.directory;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Data;
+import org.eclipse.xpanse.terraform.boot.terraform.TerraformVersionHelper;
 
 /**
  * Data model for the terraform deploy requests.
@@ -22,8 +25,14 @@ public class TerraformDeployFromDirectoryRequest {
     UUID requestId;
 
     @NotNull
+    @NotBlank
+    @Pattern(regexp = TerraformVersionHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
+    @Schema(description = "The required version of the terraform which will execute the scripts.")
+    String terraformVersion;
+
+    @NotNull
     @Schema(description = "Flag to control if the deployment must only generate the terraform "
-                + "or it must also apply the changes.")
+            + "or it must also apply the changes.")
     Boolean isPlanOnly;
 
     @NotNull
