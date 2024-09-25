@@ -20,7 +20,10 @@ import lombok.Data;
 public class TerraformResult {
 
     @Schema(description = "Id of the request")
-    UUID requestId;
+    private UUID requestId;
+    @NotNull
+    @Schema(description = "version of the terraform.")
+    private String terraformVersion;
     @NotNull
     @Schema(description = "defines if the command was successfully executed")
     private boolean isCommandSuccessful;

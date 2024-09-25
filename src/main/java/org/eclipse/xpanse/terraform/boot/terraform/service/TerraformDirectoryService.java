@@ -7,6 +7,7 @@ package org.eclipse.xpanse.terraform.boot.terraform.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Resource;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
 import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
 import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
+import org.eclipse.xpanse.terraform.boot.models.exceptions.InvalidTerraformToolException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformHealthCheckException;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
@@ -38,6 +40,8 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModif
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
+import org.eclipse.xpanse.terraform.boot.terraform.TerraformInstaller;
+import org.eclipse.xpanse.terraform.boot.terraform.TerraformVersionHelper;
 import org.eclipse.xpanse.terraform.boot.terraform.utils.SystemCmdResult;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +70,10 @@ public class TerraformDirectoryService {
 
     private final TerraformExecutor executor;
     private final RestTemplate restTemplate;
+    @Resource
+    private TerraformInstaller installer;
+    @Resource
+    private TerraformVersionHelper versionHelper;
 
     @Value("${clean.workspace.after.deployment.enabled:true}")
     private Boolean cleanWorkspaceAfterDeployment;
@@ -98,7 +106,7 @@ public class TerraformDirectoryService {
                     "Error creating or writing to file '" + filePath + "': " + e.getMessage());
         }
         TerraformValidationResult terraformValidationResult =
-                tfValidateFromDirectory(HEALTH_CHECK_DIR);
+                tfValidateFromDirectory(HEALTH_CHECK_DIR, null);
         TerraformBootSystemStatus systemStatus = new TerraformBootSystemStatus();
         if (terraformValidationResult.isValid()) {
             systemStatus.setHealthStatus(HealthStatus.OK);
@@ -113,11 +121,18 @@ public class TerraformDirectoryService {
      *
      * @return TfValidationResult.
      */
-    public TerraformValidationResult tfValidateFromDirectory(String moduleDirectory) {
+    public TerraformValidationResult tfValidateFromDirectory(String moduleDirectory,
+                                                             String terraformVersion) {
         try {
-            SystemCmdResult systemCmdResult = executor.tfValidate(moduleDirectory);
-            return new ObjectMapper().readValue(systemCmdResult.getCommandStdOutput(),
-                    TerraformValidationResult.class);
+            String executorPath =
+                    installer.getExecutorPathThatMatchesRequiredVersion(terraformVersion);
+            SystemCmdResult result = executor.tfValidate(executorPath, moduleDirectory);
+            TerraformValidationResult validationResult =
+                    new ObjectMapper().readValue(result.getCommandStdOutput(),
+                            TerraformValidationResult.class);
+            validationResult.setTerraformVersion(
+                    versionHelper.getExactVersionOfExecutor(executorPath));
+            return validationResult;
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Serialising string to object failed.", ex);
         }
@@ -129,15 +144,18 @@ public class TerraformDirectoryService {
     public TerraformResult deployFromDirectory(TerraformDeployFromDirectoryRequest request,
                                                String moduleDirectory) {
         SystemCmdResult result;
+        String executorPath = null;
         try {
+            executorPath = installer.getExecutorPathThatMatchesRequiredVersion(
+                    request.getTerraformVersion());
             if (Boolean.TRUE.equals(request.getIsPlanOnly())) {
-                result = executor.tfPlan(request.getVariables(), request.getEnvVariables(),
-                        moduleDirectory);
+                result = executor.tfPlan(executorPath, request.getVariables(),
+                        request.getEnvVariables(), moduleDirectory);
             } else {
-                result = executor.tfApply(request.getVariables(), request.getEnvVariables(),
-                        moduleDirectory);
+                result = executor.tfApply(executorPath, request.getVariables(),
+                        request.getEnvVariables(), moduleDirectory);
             }
-        } catch (TerraformExecutorException tfEx) {
+        } catch (InvalidTerraformToolException | TerraformExecutorException tfEx) {
             log.error("Terraform deploy service failed. error:{}", tfEx.getMessage());
             result = new SystemCmdResult();
             result.setCommandSuccessful(false);
@@ -145,6 +163,7 @@ public class TerraformDirectoryService {
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
+        terraformResult.setTerraformVersion(versionHelper.getExactVersionOfExecutor(executorPath));
         if (cleanWorkspaceAfterDeployment) {
             deleteWorkspace(workspace);
         }
@@ -157,15 +176,18 @@ public class TerraformDirectoryService {
     public TerraformResult modifyFromDirectory(TerraformModifyFromDirectoryRequest request,
                                                String moduleDirectory) {
         SystemCmdResult result;
+        String executorPath = null;
         try {
+            executorPath = installer.getExecutorPathThatMatchesRequiredVersion(
+                    request.getTerraformVersion());
             if (Boolean.TRUE.equals(request.getIsPlanOnly())) {
-                result = executor.tfPlan(request.getVariables(), request.getEnvVariables(),
-                        moduleDirectory);
+                result = executor.tfPlan(executorPath, request.getVariables(),
+                        request.getEnvVariables(), moduleDirectory);
             } else {
-                result = executor.tfApply(request.getVariables(), request.getEnvVariables(),
-                        moduleDirectory);
+                result = executor.tfApply(executorPath, request.getVariables(),
+                        request.getEnvVariables(), moduleDirectory);
             }
-        } catch (TerraformExecutorException tfEx) {
+        } catch (InvalidTerraformToolException | TerraformExecutorException tfEx) {
             log.error("Terraform deploy service failed. error:{}", tfEx.getMessage());
             result = new SystemCmdResult();
             result.setCommandSuccessful(false);
@@ -173,6 +195,7 @@ public class TerraformDirectoryService {
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
+        terraformResult.setTerraformVersion(versionHelper.getExactVersionOfExecutor(executorPath));
         if (cleanWorkspaceAfterDeployment) {
             deleteWorkspace(workspace);
         }
@@ -186,10 +209,13 @@ public class TerraformDirectoryService {
     public TerraformResult destroyFromDirectory(TerraformDestroyFromDirectoryRequest request,
                                                 String moduleDirectory) {
         SystemCmdResult result;
+        String executorPath = null;
         try {
-            result = executor.tfDestroy(request.getVariables(), request.getEnvVariables(),
-                    moduleDirectory);
-        } catch (TerraformExecutorException tfEx) {
+            executorPath = installer.getExecutorPathThatMatchesRequiredVersion(
+                    request.getTerraformVersion());
+            result = executor.tfDestroy(executorPath, request.getVariables(),
+                    request.getEnvVariables(), moduleDirectory);
+        } catch (InvalidTerraformToolException | TerraformExecutorException tfEx) {
             log.error("Terraform destroy service failed. error:{}", tfEx.getMessage());
             result = new SystemCmdResult();
             result.setCommandSuccessful(false);
@@ -197,6 +223,7 @@ public class TerraformDirectoryService {
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
+        terraformResult.setTerraformVersion(versionHelper.getExactVersionOfExecutor(executorPath));
         deleteWorkspace(workspace);
         terraformResult.setRequestId(request.getRequestId());
         return terraformResult;
@@ -207,11 +234,14 @@ public class TerraformDirectoryService {
      */
     public TerraformPlan getTerraformPlanFromDirectory(TerraformPlanFromDirectoryRequest request,
                                                        String moduleDirectory) {
-        String result =
-                executor.getTerraformPlanAsJson(request.getVariables(), request.getEnvVariables(),
-                        moduleDirectory);
+        String executorPath = installer.getExecutorPathThatMatchesRequiredVersion(
+                request.getTerraformVersion());
+        String result = executor.getTerraformPlanAsJson(executorPath, request.getVariables(),
+                request.getEnvVariables(), moduleDirectory);
         deleteWorkspace(executor.getModuleFullPath(moduleDirectory));
-        return TerraformPlan.builder().plan(result).build();
+        TerraformPlan terraformPlan = TerraformPlan.builder().plan(result).build();
+        terraformPlan.setTerraformVersion(versionHelper.getExactVersionOfExecutor(executorPath));
+        return terraformPlan;
     }
 
     /**

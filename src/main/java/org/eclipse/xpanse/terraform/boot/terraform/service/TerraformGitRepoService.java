@@ -41,7 +41,6 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class TerraformGitRepoService extends TerraformDirectoryService {
 
-    private static final int MAX_RETRY_COUNT = 5;
     private final RestTemplate restTemplate;
     private final TerraformExecutor executor;
     private final TerraformScriptsHelper terraformScriptsHelper;
@@ -68,7 +67,8 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
         UUID uuid = UUID.randomUUID();
         buildDeployEnv(request.getGitRepoDetails(), uuid);
         return tfValidateFromDirectory(
-                getScriptsLocationInRepo(request.getGitRepoDetails(), uuid));
+                getScriptsLocationInRepo(request.getGitRepoDetails(), uuid),
+                request.getTerraformVersion());
     }
 
     /**

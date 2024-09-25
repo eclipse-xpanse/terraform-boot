@@ -116,4 +116,16 @@ public class TerraformApiExceptionHandler {
         return Response.errorResponse(ResultType.INVALID_GIT_REPO_DETAILS,
                 Collections.singletonList(failMessage));
     }
+
+    /**
+     * Exception handler for UnsupportedEnumValueException.
+     */
+    @ExceptionHandler({InvalidTerraformToolException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Response handleInvalidTerraformToolException(
+            InvalidTerraformToolException ex) {
+        return Response.errorResponse(ResultType.INVALID_TERRAFORM_TOOL,
+                Collections.singletonList(ex.getMessage()));
+    }
 }
