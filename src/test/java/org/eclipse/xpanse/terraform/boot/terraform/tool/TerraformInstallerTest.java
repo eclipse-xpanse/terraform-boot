@@ -1,4 +1,4 @@
-package org.eclipse.xpanse.terraform.boot.terraform;
+package org.eclipse.xpanse.terraform.boot.terraform.tool;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,7 +16,7 @@ class TerraformInstallerTest {
     @Resource
     private TerraformInstaller installer;
     @Resource
-    private TerraformVersionHelper versionHelper;
+    private TerraformVersionsHelper versionHelper;
 
     @Test
     void testGetExecutableTerraformByVersion() {
@@ -49,7 +49,5 @@ class TerraformInstallerTest {
         String requiredVersion4 = ">= 100.0.0";
         assertThrows(InvalidTerraformToolException.class, () ->
                 installer.getExecutorPathThatMatchesRequiredVersion(requiredVersion4));
-
-
     }
 }

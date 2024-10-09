@@ -40,8 +40,8 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModif
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
-import org.eclipse.xpanse.terraform.boot.terraform.TerraformInstaller;
-import org.eclipse.xpanse.terraform.boot.terraform.TerraformVersionHelper;
+import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformInstaller;
+import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 import org.eclipse.xpanse.terraform.boot.terraform.utils.SystemCmdResult;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +73,7 @@ public class TerraformDirectoryService {
     @Resource
     private TerraformInstaller installer;
     @Resource
-    private TerraformVersionHelper versionHelper;
+    private TerraformVersionsHelper versionHelper;
 
     @Value("${clean.workspace.after.deployment.enabled:true}")
     private Boolean cleanWorkspaceAfterDeployment;
