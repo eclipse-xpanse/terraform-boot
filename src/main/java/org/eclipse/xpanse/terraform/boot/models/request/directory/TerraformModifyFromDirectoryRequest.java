@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Data;
-import org.eclipse.xpanse.terraform.boot.terraform.TerraformVersionHelper;
+import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 
 /**
  * Data model for the terraform modify requests.
@@ -28,7 +28,7 @@ public class TerraformModifyFromDirectoryRequest {
 
     @NotNull
     @NotBlank
-    @Pattern(regexp = TerraformVersionHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
+    @Pattern(regexp = TerraformVersionsHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
     @Schema(description = "The required version of the terraform which will execute the scripts.")
     String terraformVersion;
 

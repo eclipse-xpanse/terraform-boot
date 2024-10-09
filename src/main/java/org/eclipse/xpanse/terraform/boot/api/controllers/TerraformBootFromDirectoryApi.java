@@ -26,8 +26,8 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDestr
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModifyFromDirectoryRequest;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
-import org.eclipse.xpanse.terraform.boot.terraform.TerraformVersionHelper;
 import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformDirectoryService;
+import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -79,7 +79,7 @@ public class TerraformBootFromDirectoryApi {
             @PathVariable("module_directory") String moduleDirectory,
             @Parameter(name = "terraform_version",
                     description = "version of Terraform to execute the module files.")
-            @NotBlank @Pattern(regexp = TerraformVersionHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
+            @NotBlank @Pattern(regexp = TerraformVersionsHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
             @PathVariable("terraform_version") String terraformVersion) {
         UUID uuid = UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
