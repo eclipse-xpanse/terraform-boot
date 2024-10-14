@@ -7,10 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import jakarta.annotation.Resource;
 import java.io.File;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.InvalidTerraformToolException;
+import org.eclipse.xpanse.terraform.boot.terraform.utils.SystemCmd;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(classes = {TerraformInstaller.class,
+        TerraformVersionsHelper.class, TerraformVersionsCache.class, TerraformVersionsFetcher.class, SystemCmd.class})
 class TerraformInstallerTest {
 
     @Resource
