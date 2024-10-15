@@ -71,8 +71,7 @@ public class TerraformInstaller {
                 requiredOperator, requiredNumber);
         File installedExecutorFile = this.versionHelper.installTerraformWithVersion(
                 bestVersionNumber, this.terraformDownloadBaseUrl, this.terraformInstallDir);
-        if (this.versionHelper.checkIfExecutorVersionIsValid(installedExecutorFile,
-                requiredOperator, requiredNumber)) {
+        if (this.versionHelper.checkIfExecutorCanBeExecuted(installedExecutorFile)) {
             log.info("Terraform with version {}  installed successfully.", installedExecutorFile);
             return installedExecutorFile.getAbsolutePath();
         }

@@ -29,21 +29,21 @@ class TerraformInstallerTest {
         String[] operatorAndNumber1 = versionHelper.getOperatorAndNumberFromRequiredVersion(
                 requiredVersion1);
         String terraformPath1 = installer.getExecutorPathThatMatchesRequiredVersion(requiredVersion1);
-        assertTrue(versionHelper.checkIfExecutorVersionIsValid(new File(terraformPath1),
+        assertTrue(versionHelper.checkIfExecutorIsMatchedRequiredVersion(new File(terraformPath1),
                 operatorAndNumber1[0], operatorAndNumber1[1]));
 
         String requiredVersion2 = "<= v1.5.9";
         String[] operatorAndNumber2 = versionHelper.getOperatorAndNumberFromRequiredVersion(
                 requiredVersion2);
         String terraformPath2 = installer.getExecutorPathThatMatchesRequiredVersion(requiredVersion2);
-        assertTrue(versionHelper.checkIfExecutorVersionIsValid(new File(terraformPath2),
+        assertTrue(versionHelper.checkIfExecutorIsMatchedRequiredVersion(new File(terraformPath2),
                 operatorAndNumber2[0], operatorAndNumber2[1]));
 
         String requiredVersion3 = ">= v1.9.5";
         String[] operatorAndNumber3 = versionHelper.getOperatorAndNumberFromRequiredVersion(
                 requiredVersion3);
         String terraformPath3 = installer.getExecutorPathThatMatchesRequiredVersion(requiredVersion3);
-        assertTrue(versionHelper.checkIfExecutorVersionIsValid(new File(terraformPath3),
+        assertTrue(versionHelper.checkIfExecutorIsMatchedRequiredVersion(new File(terraformPath3),
                 operatorAndNumber3[0], operatorAndNumber3[1]));
 
         String requiredVersion4 = ">= 100.0.0";

@@ -17,10 +17,10 @@ import lombok.Data;
 @Builder
 public class TerraformPlan {
 
-    @Schema(description = "Version of terraform")
-    String terraformVersion;
-
     @NotNull
     @Schema(description = "Terraform plan as a JSON string")
     String plan;
+
+    @Schema(description = "The version of the Terraform binary used to execute scripts.")
+    private String terraformVersionUsed;
 }

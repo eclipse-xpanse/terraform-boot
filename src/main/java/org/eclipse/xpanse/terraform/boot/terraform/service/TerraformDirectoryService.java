@@ -130,7 +130,7 @@ public class TerraformDirectoryService {
             TerraformValidationResult validationResult =
                     new ObjectMapper().readValue(result.getCommandStdOutput(),
                             TerraformValidationResult.class);
-            validationResult.setTerraformVersion(
+            validationResult.setTerraformVersionUsed(
                     versionHelper.getExactVersionOfExecutor(executorPath));
             return validationResult;
         } catch (JsonProcessingException ex) {
@@ -163,7 +163,8 @@ public class TerraformDirectoryService {
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
-        terraformResult.setTerraformVersion(versionHelper.getExactVersionOfExecutor(executorPath));
+        terraformResult.setTerraformVersionUsed(
+                versionHelper.getExactVersionOfExecutor(executorPath));
         if (cleanWorkspaceAfterDeployment) {
             deleteWorkspace(workspace);
         }
@@ -195,7 +196,8 @@ public class TerraformDirectoryService {
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
-        terraformResult.setTerraformVersion(versionHelper.getExactVersionOfExecutor(executorPath));
+        terraformResult.setTerraformVersionUsed(
+                versionHelper.getExactVersionOfExecutor(executorPath));
         if (cleanWorkspaceAfterDeployment) {
             deleteWorkspace(workspace);
         }
@@ -223,7 +225,8 @@ public class TerraformDirectoryService {
         }
         String workspace = executor.getModuleFullPath(moduleDirectory);
         TerraformResult terraformResult = transSystemCmdResultToTerraformResult(result, workspace);
-        terraformResult.setTerraformVersion(versionHelper.getExactVersionOfExecutor(executorPath));
+        terraformResult.setTerraformVersionUsed(
+                versionHelper.getExactVersionOfExecutor(executorPath));
         deleteWorkspace(workspace);
         terraformResult.setRequestId(request.getRequestId());
         return terraformResult;
@@ -234,13 +237,14 @@ public class TerraformDirectoryService {
      */
     public TerraformPlan getTerraformPlanFromDirectory(TerraformPlanFromDirectoryRequest request,
                                                        String moduleDirectory) {
-        String executorPath = installer.getExecutorPathThatMatchesRequiredVersion(
-                request.getTerraformVersion());
+        String executorPath =
+                installer.getExecutorPathThatMatchesRequiredVersion(request.getTerraformVersion());
         String result = executor.getTerraformPlanAsJson(executorPath, request.getVariables(),
                 request.getEnvVariables(), moduleDirectory);
         deleteWorkspace(executor.getModuleFullPath(moduleDirectory));
         TerraformPlan terraformPlan = TerraformPlan.builder().plan(result).build();
-        terraformPlan.setTerraformVersion(versionHelper.getExactVersionOfExecutor(executorPath));
+        terraformPlan.setTerraformVersionUsed(
+                versionHelper.getExactVersionOfExecutor(executorPath));
         return terraformPlan;
     }
 
@@ -254,13 +258,10 @@ public class TerraformDirectoryService {
         try {
             result = deployFromDirectory(asyncDeployRequest, moduleDirectory);
         } catch (RuntimeException e) {
-            result = TerraformResult.builder()
-                    .commandStdOutput(null)
-                    .commandStdError(e.getMessage())
-                    .isCommandSuccessful(false)
-                    .terraformState(null)
-                    .importantFileContentMap(new HashMap<>())
-                    .build();
+            result =
+                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
+                            .isCommandSuccessful(false).terraformState(null)
+                            .importantFileContentMap(new HashMap<>()).build();
         }
         result.setRequestId(asyncDeployRequest.getRequestId());
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
@@ -278,13 +279,10 @@ public class TerraformDirectoryService {
         try {
             result = modifyFromDirectory(asyncModifyRequest, moduleDirectory);
         } catch (RuntimeException e) {
-            result = TerraformResult.builder()
-                    .commandStdOutput(null)
-                    .commandStdError(e.getMessage())
-                    .isCommandSuccessful(false)
-                    .terraformState(null)
-                    .importantFileContentMap(new HashMap<>())
-                    .build();
+            result =
+                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
+                            .isCommandSuccessful(false).terraformState(null)
+                            .importantFileContentMap(new HashMap<>()).build();
         }
         result.setRequestId(asyncModifyRequest.getRequestId());
         String url = asyncModifyRequest.getWebhookConfig().getUrl();
@@ -302,13 +300,10 @@ public class TerraformDirectoryService {
         try {
             result = destroyFromDirectory(request, moduleDirectory);
         } catch (RuntimeException e) {
-            result = TerraformResult.builder()
-                    .commandStdOutput(null)
-                    .commandStdError(e.getMessage())
-                    .isCommandSuccessful(false)
-                    .terraformState(null)
-                    .importantFileContentMap(new HashMap<>())
-                    .build();
+            result =
+                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
+                            .isCommandSuccessful(false).terraformState(null)
+                            .importantFileContentMap(new HashMap<>()).build();
         }
         result.setRequestId(request.getRequestId());
         String url = request.getWebhookConfig().getUrl();
