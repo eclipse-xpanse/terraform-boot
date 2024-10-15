@@ -91,7 +91,8 @@ public class TerraformVersionsHelper {
                 executorVersionFileMap.keySet(), requiredOperator, requiredNumber);
         if (StringUtils.isNotBlank(findBestVersion)) {
             File executorFile = executorVersionFileMap.get(findBestVersion);
-            if (checkIfExecutorVersionIsValid(executorFile, requiredOperator, requiredNumber)) {
+            if (checkIfExecutorIsMatchedRequiredVersion(executorFile, requiredOperator,
+                    requiredNumber)) {
                 return executorFile.getAbsolutePath();
             }
         }
@@ -154,56 +155,79 @@ public class TerraformVersionsHelper {
     }
 
     /**
-     * Check if the exact version of terraform executor is valid.
+     * Check the version of installed executor is matched required version.
      *
      * @param executorFile     executor file
      * @param requiredOperator operator in required version
      * @param requiredNumber   number in required version
      * @return true if the version is valid, otherwise return false.
      */
-    public boolean checkIfExecutorVersionIsValid(File executorFile,
-                                                 String requiredOperator,
-                                                 String requiredNumber) {
-        if (!executorFile.exists() && !executorFile.isFile()) {
-            return false;
+    public boolean checkIfExecutorIsMatchedRequiredVersion(File executorFile,
+                                                           String requiredOperator,
+                                                           String requiredNumber) {
+        String versionNumber = getExactVersionOfExecutor(executorFile.getAbsolutePath());
+        if (StringUtils.isNotBlank(versionNumber)) {
+            return isVersionSatisfied(versionNumber, requiredOperator, requiredNumber);
         }
-        if (!executorFile.canExecute()) {
-            SystemCmdResult chmodResult = systemCmd.execute(
-                    String.format("chmod +x %s", executorFile.getAbsolutePath()),
-                    5, System.getProperty("java.io.tmpdir"), false, new HashMap<>());
-            if (!chmodResult.isCommandSuccessful()) {
-                log.error(chmodResult.getCommandStdError());
-                return false;
-            }
-        }
-        String actualVersion = getExactVersionOfExecutor(executorFile.getAbsolutePath());
-        if (StringUtils.isBlank(actualVersion)) {
-            return false;
-        }
-        return isVersionSatisfied(actualVersion, requiredOperator, requiredNumber);
+        return false;
     }
 
 
     /**
-     * Get the exact version of terraform executor.
+     * Check if the executor can be executed.
      *
-     * @param executorPath the path of terraform executor
-     * @return the exact version of terraform executor
+     * @param executorFile executor file
+     * @return If true, the executor can be executed, otherwise return false.
+     */
+    public boolean checkIfExecutorCanBeExecuted(File executorFile) {
+        String versionOutput = getVersionCommandOutput(executorFile);
+        return StringUtils.isNotBlank(versionOutput);
+    }
+
+    /**
+     * Get exact version of executor.
+     *
+     * @param executorPath executor path
+     * @return exact version of executor.
      */
     public String getExactVersionOfExecutor(String executorPath) {
-        if (StringUtils.isBlank(executorPath)) {
-            return null;
+        String versionOutput = getVersionCommandOutput(new File(executorPath));
+        Matcher matcher = TERRAFORM_VERSION_OUTPUT_PATTERN.matcher(versionOutput);
+        if (matcher.find()) {
+            // return only the version number.
+            return matcher.group(1);
         }
-        SystemCmdResult versionCheckResult = systemCmd.execute(executorPath + " -v",
-                5, System.getProperty("java.io.tmpdir"), false, new HashMap<>());
-        if (versionCheckResult.isCommandSuccessful()) {
-            return getActualVersionFromCommandOutput(versionCheckResult.getCommandStdOutput());
-        } else {
-            log.error(versionCheckResult.getCommandStdError());
+        return null;
+    }
+
+
+    private String getVersionCommandOutput(File executorFile) {
+        try {
+            if (!executorFile.exists() && !executorFile.isFile()) {
+                return null;
+            }
+            if (!executorFile.canExecute()) {
+                SystemCmdResult chmodResult = systemCmd.execute(
+                        String.format("chmod +x %s", executorFile.getAbsolutePath()),
+                        5, System.getProperty("java.io.tmpdir"), false, new HashMap<>());
+                if (!chmodResult.isCommandSuccessful()) {
+                    log.error(chmodResult.getCommandStdError());
+                }
+            }
+            SystemCmdResult versionCheckResult =
+                    systemCmd.execute(executorFile.getAbsolutePath() + " version",
+                            5, System.getProperty("java.io.tmpdir"), false, new HashMap<>());
+            if (versionCheckResult.isCommandSuccessful()) {
+                return versionCheckResult.getCommandStdOutput();
+            } else {
+                log.error(versionCheckResult.getCommandStdError());
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Failed to get version of executor {}.", executorFile.getAbsolutePath(), e);
             return null;
         }
     }
-
 
     /**
      * Install terraform with specific version.
@@ -319,14 +343,6 @@ public class TerraformVersionsHelper {
     private String getVersionFromExecutorPath(String executorPath) {
         if (executorPath.contains("-")) {
             return Arrays.asList(executorPath.split("-")).getLast();
-        }
-        return null;
-    }
-
-    private String getActualVersionFromCommandOutput(String commandOutput) {
-        Matcher matcher = TERRAFORM_VERSION_OUTPUT_PATTERN.matcher(commandOutput);
-        if (matcher.find()) {
-            return matcher.group(1);
         }
         return null;
     }
