@@ -19,7 +19,7 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDestr
 public class TerraformDestroyFromGitRepoRequest extends TerraformDestroyFromDirectoryRequest {
 
     @Schema(description = "GIT Repo details from where the scripts can be fetched.")
-    TerraformScriptGitRepoDetails gitRepoDetails;
+    private TerraformScriptGitRepoDetails gitRepoDetails;
 
     @NotNull
     @Schema(description = "The .tfState file content after deployment")

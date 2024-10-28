@@ -20,5 +20,5 @@ public class TerraformDeployFromGitRepoRequest extends TerraformDeployFromDirect
 
     @NotNull
     @Schema(description = "GIT Repo details from where the scripts can be fetched.")
-    TerraformScriptGitRepoDetails gitRepoDetails;
+    private TerraformScriptGitRepoDetails gitRepoDetails;
 }

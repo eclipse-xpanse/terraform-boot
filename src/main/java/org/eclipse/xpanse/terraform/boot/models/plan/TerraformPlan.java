@@ -19,7 +19,7 @@ public class TerraformPlan {
 
     @NotNull
     @Schema(description = "Terraform plan as a JSON string")
-    String plan;
+    private String plan;
 
     @Schema(description = "The version of the Terraform binary used to execute scripts.")
     private String terraformVersionUsed;

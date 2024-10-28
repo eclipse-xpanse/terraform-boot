@@ -22,27 +22,27 @@ import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 public class TerraformDeployFromDirectoryRequest {
 
     @Schema(description = "Id of the request")
-    UUID requestId;
+    private UUID requestId;
 
     @NotNull
     @NotBlank
     @Pattern(regexp = TerraformVersionsHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
     @Schema(description = "The required version of the terraform which will execute the scripts.")
-    String terraformVersion;
+    private String terraformVersion;
 
     @NotNull
     @Schema(description = "Flag to control if the deployment must only generate the terraform "
             + "or it must also apply the changes.")
-    Boolean isPlanOnly;
+    private Boolean isPlanOnly;
 
     @NotNull
     @Schema(description = "Key-value pairs of variables that must be used to execute the "
             + "Terraform request.",
             additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
-    Map<String, Object> variables;
+    private Map<String, Object> variables;
 
     @Schema(description = "Key-value pairs of variables that must be injected as environment "
             + "variables to terraform process.",
             additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
-    Map<String, String> envVariables = new HashMap<>();
+    private Map<String, String> envVariables = new HashMap<>();
 }

@@ -18,5 +18,5 @@ import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformScriptGitRe
 public class TerraformPlanFromGitRepoRequest extends TerraformPlanFromDirectoryRequest {
 
     @Schema(description = "GIT Repo details from where the scripts can be fetched.")
-    TerraformScriptGitRepoDetails gitRepoDetails;
+    private TerraformScriptGitRepoDetails gitRepoDetails;
 }

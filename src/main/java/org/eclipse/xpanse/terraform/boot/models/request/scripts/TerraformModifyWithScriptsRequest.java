@@ -21,7 +21,7 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModif
 public class TerraformModifyWithScriptsRequest extends TerraformModifyFromDirectoryRequest {
 
     @Schema(description = "Id of the request.")
-    UUID taskId;
+    private UUID taskId;
 
     @NotNull
     @Schema(description = "List of script files for modify requests deployed via scripts")
