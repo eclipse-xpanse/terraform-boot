@@ -6,11 +6,13 @@
 package org.eclipse.xpanse.terraform.boot.terraform.tool;
 
 
-import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Resource;
 import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -20,7 +22,7 @@ import org.springframework.util.CollectionUtils;
  */
 @Slf4j
 @Component
-public class TerraformVersionsCacheManager {
+public class TerraformVersionsCacheManager implements ApplicationListener<ApplicationStartedEvent> {
 
     @Resource
     private TerraformVersionsCache versionsCache;
@@ -28,11 +30,16 @@ public class TerraformVersionsCacheManager {
     @Resource
     private TerraformVersionsFetcher versionsFetcher;
 
+    @Override
+    public void onApplicationEvent(@Nonnull ApplicationStartedEvent event) {
+        initializeCache();
+    }
+
     /**
      * Initialize the cache of available versions of Terraform.
      */
-    @PostConstruct
-    public void initializeCache() {
+    private void initializeCache() {
+        log.info("Initializing Terraform versions cache.");
         Set<String> versions = versionsCache.getAvailableVersions();
         log.info("Initialized Terraform versions cache with versions:{}.", versions);
     }

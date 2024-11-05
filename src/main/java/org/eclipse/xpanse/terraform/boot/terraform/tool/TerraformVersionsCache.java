@@ -34,6 +34,8 @@ public class TerraformVersionsCache {
         try {
             return versionsFetcher.fetchAvailableVersionsFromTerraformWebsite();
         } catch (Exception e) {
+            log.error("Failed to fetch versions from Terraform website. Using default versions.",
+                    e);
             return versionsFetcher.getDefaultVersionsFromConfig();
         }
     }
