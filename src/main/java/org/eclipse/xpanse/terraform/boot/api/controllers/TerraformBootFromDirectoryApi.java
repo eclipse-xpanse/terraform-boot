@@ -10,9 +10,12 @@ import static org.eclipse.xpanse.terraform.boot.logging.CustomRequestIdGenerator
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import java.io.File;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +30,9 @@ import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModif
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformDirectoryService;
+import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformScriptsHelper;
 import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -53,14 +55,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/terraform-boot/directory")
 public class TerraformBootFromDirectoryApi {
 
-    private final TerraformDirectoryService terraformDirectoryService;
-
-    @Autowired
-    public TerraformBootFromDirectoryApi(
-            @Qualifier("terraformDirectoryService")
-            TerraformDirectoryService terraformDirectoryService) {
-        this.terraformDirectoryService = terraformDirectoryService;
-    }
+    @Resource
+    private TerraformDirectoryService directoryService;
+    @Resource
+    private TerraformScriptsHelper scriptsHelper;
 
     /**
      * Method to validate Terraform modules.
@@ -83,7 +81,7 @@ public class TerraformBootFromDirectoryApi {
             @PathVariable("terraform_version") String terraformVersion) {
         UUID uuid = UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
-        return terraformDirectoryService.tfValidateFromDirectory(moduleDirectory, terraformVersion);
+        return directoryService.tfValidateFromDirectory(moduleDirectory, terraformVersion);
     }
 
     /**
@@ -105,7 +103,8 @@ public class TerraformBootFromDirectoryApi {
                 ? request.getRequestId() : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
-        return terraformDirectoryService.deployFromDirectory(request, moduleDirectory);
+        List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
+        return directoryService.deployFromDirectory(request, moduleDirectory, scriptFiles);
     }
 
     /**
@@ -127,7 +126,8 @@ public class TerraformBootFromDirectoryApi {
                 ? request.getRequestId() : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
-        return terraformDirectoryService.modifyFromDirectory(request, moduleDirectory);
+        List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
+        return directoryService.modifyFromDirectory(request, moduleDirectory, scriptFiles);
     }
 
     /**
@@ -150,7 +150,8 @@ public class TerraformBootFromDirectoryApi {
                 ? request.getRequestId() : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
-        return terraformDirectoryService.destroyFromDirectory(request, moduleDirectory);
+        List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
+        return directoryService.destroyFromDirectory(request, moduleDirectory, scriptFiles);
     }
 
     /**
@@ -174,8 +175,7 @@ public class TerraformBootFromDirectoryApi {
                 : (Objects.nonNull(uuid) ? uuid : UUID.randomUUID());
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
-        return terraformDirectoryService.getTerraformPlanFromDirectory(request,
-                moduleDirectory);
+        return directoryService.getTerraformPlanFromDirectory(request, moduleDirectory);
     }
 
     /**
@@ -196,7 +196,8 @@ public class TerraformBootFromDirectoryApi {
                 ? request.getRequestId() : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
-        terraformDirectoryService.asyncDeployWithScripts(request, moduleDirectory);
+        List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
+        directoryService.asyncDeployWithScripts(request, moduleDirectory, scriptFiles);
     }
 
     /**
@@ -217,7 +218,8 @@ public class TerraformBootFromDirectoryApi {
                 ? request.getRequestId() : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
-        terraformDirectoryService.asyncModifyWithScripts(request, moduleDirectory);
+        List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
+        directoryService.asyncModifyWithScripts(request, moduleDirectory, scriptFiles);
     }
 
     /**
@@ -238,6 +240,7 @@ public class TerraformBootFromDirectoryApi {
                 ? request.getRequestId() : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
-        terraformDirectoryService.asyncDestroyWithScripts(request, moduleDirectory);
+        List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
+        directoryService.asyncDestroyWithScripts(request, moduleDirectory, scriptFiles);
     }
 }

@@ -5,9 +5,15 @@
 
 package org.eclipse.xpanse.terraform.boot.terraform.service;
 
+import static org.eclipse.xpanse.terraform.boot.terraform.service.TerraformScriptsHelper.TF_SCRIPT_FILE_EXTENSION;
+
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -36,7 +42,7 @@ public class ScriptsGitRepoManage {
     @Retryable(retryFor = GitRepoCloneException.class,
             maxAttemptsExpression = "${spring.retry.max-attempts}",
             backoff = @Backoff(delayExpression = "${spring.retry.delay-millions}"))
-    public void checkoutScripts(String workspace, TerraformScriptGitRepoDetails scriptsRepo) {
+    public List<File> checkoutScripts(String workspace, TerraformScriptGitRepoDetails scriptsRepo) {
         log.info("Clone GIT repo to get the deployment scripts. Retry number: "
                 + Objects.requireNonNull(RetrySynchronizationManager.getContext()).getRetryCount());
         File workspaceDirectory = new File(workspace);
@@ -60,8 +66,33 @@ public class ScriptsGitRepoManage {
         } else {
             log.info("Scripts repo is already cloned in the workspace.");
         }
+        return folderContainsScripts(workspace, scriptsRepo);
     }
 
+    private List<File> folderContainsScripts(String workspace,
+                                             TerraformScriptGitRepoDetails scriptsRepo) {
+        File directory = new File(workspace
+                + (StringUtils.isNotBlank(scriptsRepo.getScriptPath())
+                ? File.separator + scriptsRepo.getScriptPath()
+                : ""));
+        File[] files = directory.listFiles();
+        boolean isScriptsExisted = Objects.nonNull(files) && files.length > 0;
+        if (isScriptsExisted) {
+            Optional<File> tfFileOptional = Arrays.stream(files).filter(file ->
+                    file.getName().endsWith(TF_SCRIPT_FILE_EXTENSION)).findAny();
+            isScriptsExisted = tfFileOptional.isPresent();
+        }
+        if (!isScriptsExisted) {
+            throw new GitRepoCloneException(
+                    "No terraform scripts found in the "
+                            + scriptsRepo.getRepoUrl()
+                            + " repo's '"
+                            + (StringUtils.isNotBlank(scriptsRepo.getScriptPath())
+                            ? File.separator + scriptsRepo.getScriptPath() : "root")
+                            + "' folder.");
+        }
+        return Arrays.asList(files);
+    }
 
     /**
      * Recover method for checkoutScripts.

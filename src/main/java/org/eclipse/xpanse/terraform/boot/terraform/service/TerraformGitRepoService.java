@@ -5,19 +5,14 @@
 
 package org.eclipse.xpanse.terraform.boot.terraform.service;
 
+import jakarta.annotation.Resource;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
-import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlan;
 import org.eclipse.xpanse.terraform.boot.models.plan.TerraformPlanFromGitRepoRequest;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformAsyncDeployFromGitRepoRequest;
@@ -29,7 +24,6 @@ import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformModifyFromG
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformScriptGitRepoDetails;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
-import org.eclipse.xpanse.terraform.boot.terraform.TerraformExecutor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -39,78 +33,85 @@ import org.springframework.web.client.RestTemplate;
  */
 @Slf4j
 @Component
-public class TerraformGitRepoService extends TerraformDirectoryService {
+public class TerraformGitRepoService {
 
-    private final RestTemplate restTemplate;
-    private final TerraformExecutor executor;
-    private final TerraformScriptsHelper terraformScriptsHelper;
-    private final ScriptsGitRepoManage scriptsGitRepoManage;
-
-    /**
-     * Constructor for TerraformGitRepoService bean.
-     */
-    public TerraformGitRepoService(TerraformExecutor executor, RestTemplate restTemplate,
-                                   TerraformScriptsHelper terraformScriptsHelper,
-                                   ScriptsGitRepoManage scriptsGitRepoManage) {
-        super(executor, restTemplate);
-        this.restTemplate = restTemplate;
-        this.executor = executor;
-        this.terraformScriptsHelper = terraformScriptsHelper;
-        this.scriptsGitRepoManage = scriptsGitRepoManage;
-    }
+    @Resource
+    private RestTemplate restTemplate;
+    @Resource
+    private TerraformScriptsHelper scriptsHelper;
+    @Resource
+    private TerraformDirectoryService directoryService;
 
     /**
      * Method of deployment a service using a script.
      */
     public TerraformValidationResult validateWithScripts(
             TerraformDeployFromGitRepoRequest request) {
-        UUID uuid = UUID.randomUUID();
-        buildDeployEnv(request.getGitRepoDetails(), uuid);
-        return tfValidateFromDirectory(
-                getScriptsLocationInRepo(request.getGitRepoDetails(), uuid),
-                request.getTerraformVersion());
+        String taskWorkspace = scriptsHelper.buildTaskWorkspace(UUID.randomUUID().toString());
+        scriptsHelper.prepareDeploymentFilesWithGitRepo(
+                taskWorkspace, request.getGitRepoDetails(), null);
+        String scriptsPath = getScriptsLocationInTaskWorkspace(
+                request.getGitRepoDetails(), taskWorkspace);
+        return directoryService.tfValidateFromDirectory(scriptsPath, request.getTerraformVersion());
     }
 
     /**
      * Method to get terraform plan.
      */
-    public TerraformPlan getTerraformPlanFromGitRepo(TerraformPlanFromGitRepoRequest request,
-                                                     UUID uuid) {
-        uuid = getUuidToCreateEmptyWorkspace(uuid);
-        buildDeployEnv(request.getGitRepoDetails(), uuid);
-        return getTerraformPlanFromDirectory(request,
-                getScriptsLocationInRepo(request.getGitRepoDetails(), uuid));
+    public TerraformPlan getTerraformPlanFromGitRepo(
+            TerraformPlanFromGitRepoRequest request, UUID uuid) {
+        String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
+        scriptsHelper.prepareDeploymentFilesWithGitRepo(
+                taskWorkspace, request.getGitRepoDetails(), null);
+        String scriptsPath = getScriptsLocationInTaskWorkspace(
+                request.getGitRepoDetails(), taskWorkspace);
+        return directoryService.getTerraformPlanFromDirectory(request, scriptsPath);
     }
 
     /**
      * Method of deployment a service using a script.
      */
     public TerraformResult deployFromGitRepo(TerraformDeployFromGitRepoRequest request, UUID uuid) {
-        uuid = getUuidToCreateEmptyWorkspace(uuid);
-        buildDeployEnv(request.getGitRepoDetails(), uuid);
-        return deployFromDirectory(request,
-                getScriptsLocationInRepo(request.getGitRepoDetails(), uuid));
+        String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
+        List<File> scriptFiles = scriptsHelper.prepareDeploymentFilesWithGitRepo(
+                taskWorkspace, request.getGitRepoDetails(), null);
+        String scriptsPath = getScriptsLocationInTaskWorkspace(
+                request.getGitRepoDetails(), taskWorkspace);
+        TerraformResult result =
+                directoryService.deployFromDirectory(request, scriptsPath, scriptFiles);
+        scriptsHelper.deleteTaskWorkspace(taskWorkspace);
+        return result;
     }
 
     /**
      * Method of modify a service using a script.
      */
     public TerraformResult modifyFromGitRepo(TerraformModifyFromGitRepoRequest request, UUID uuid) {
-        uuid = getUuidToCreateEmptyWorkspace(uuid);
-        buildModifyEnv(request.getGitRepoDetails(), request.getTfState(), uuid);
-        return modifyFromDirectory(request,
-                getScriptsLocationInRepo(request.getGitRepoDetails(), uuid));
+        String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
+        List<File> scriptFiles = scriptsHelper.prepareDeploymentFilesWithGitRepo(
+                taskWorkspace, request.getGitRepoDetails(), request.getTfState());
+        String scriptsPath = getScriptsLocationInTaskWorkspace(
+                request.getGitRepoDetails(), taskWorkspace);
+        TerraformResult result =
+                directoryService.modifyFromDirectory(request, scriptsPath, scriptFiles);
+        scriptsHelper.deleteTaskWorkspace(taskWorkspace);
+        return result;
     }
 
     /**
      * Method of destroy a service using a script.
      */
-    public TerraformResult destroyFromGitRepo(TerraformDestroyFromGitRepoRequest request,
-                                              UUID uuid) {
-        uuid = getUuidToCreateEmptyWorkspace(uuid);
-        buildDestroyEnv(request.getGitRepoDetails(), request.getTfState(), uuid);
-        return destroyFromDirectory(request, getScriptsLocationInRepo(
-                request.getGitRepoDetails(), uuid));
+    public TerraformResult destroyFromGitRepo(
+            TerraformDestroyFromGitRepoRequest request, UUID uuid) {
+        String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
+        List<File> scriptFiles = scriptsHelper.prepareDeploymentFilesWithGitRepo(
+                taskWorkspace, request.getGitRepoDetails(), request.getTfState());
+        String scriptsPath = getScriptsLocationInTaskWorkspace(
+                request.getGitRepoDetails(), taskWorkspace);
+        TerraformResult result =
+                directoryService.destroyFromDirectory(request, scriptsPath, scriptFiles);
+        scriptsHelper.deleteTaskWorkspace(taskWorkspace);
+        return result;
     }
 
     /**
@@ -186,75 +187,13 @@ public class TerraformGitRepoService extends TerraformDirectoryService {
         restTemplate.postForLocation(url, result);
     }
 
-    private void buildDeployEnv(TerraformScriptGitRepoDetails terraformScriptGitRepoDetails,
-                                UUID uuid) {
-        String workspace = executor.getModuleFullPath(uuid.toString());
-        buildWorkspace(workspace);
-        scriptsGitRepoManage.checkoutScripts(workspace, terraformScriptGitRepoDetails);
-    }
 
-    private void buildModifyEnv(TerraformScriptGitRepoDetails terraformScriptGitRepoDetails,
-                                String tfState, UUID uuid) {
-        buildDeployEnv(terraformScriptGitRepoDetails, uuid);
-        terraformScriptsHelper.createTfStateFile(tfState,
-                uuid + File.separator + terraformScriptGitRepoDetails.getScriptPath());
-    }
-
-    private void buildDestroyEnv(TerraformScriptGitRepoDetails terraformScriptGitRepoDetails,
-                                 String tfState, UUID uuid) {
-        buildDeployEnv(terraformScriptGitRepoDetails, uuid);
-        terraformScriptsHelper.createTfStateFile(tfState,
-                uuid + File.separator + terraformScriptGitRepoDetails.getScriptPath());
-    }
-
-    private UUID getUuidToCreateEmptyWorkspace(UUID uuid) {
-        File ws = new File(executor.getModuleFullPath(uuid.toString()));
-        if (ws.exists()) {
-            if (!cleanWorkspace(uuid)) {
-                uuid = UUID.randomUUID();
-                log.info("Clean existed workspace failed. Create empty workspace with id:{}", uuid);
-                return UUID.randomUUID();
-            }
-        }
-        return uuid;
-    }
-
-    private void buildWorkspace(String workspace) {
-        log.info("start create workspace");
-        File ws = new File(workspace);
-        if (!ws.exists() && !ws.mkdirs()) {
-            throw new TerraformExecutorException(
-                    "Create workspace failed, File path not created: " + ws.getAbsolutePath());
-        }
-        log.info("workspace create success, Working directory is " + ws.getAbsolutePath());
-    }
-
-
-    private String getScriptsLocationInRepo(
-            TerraformScriptGitRepoDetails terraformScriptGitRepoDetails, UUID uuid) {
+    private String getScriptsLocationInTaskWorkspace(
+            TerraformScriptGitRepoDetails terraformScriptGitRepoDetails, String taskWorkSpace) {
         if (StringUtils.isNotBlank(terraformScriptGitRepoDetails.getScriptPath())) {
-            return uuid + File.separator + terraformScriptGitRepoDetails.getScriptPath();
+            return taskWorkSpace + File.separator + terraformScriptGitRepoDetails.getScriptPath();
         }
-        return uuid.toString();
-    }
-
-    private boolean cleanWorkspace(UUID uuid) {
-        boolean cleanSuccess = true;
-        try {
-            String workspace = executor.getModuleFullPath(uuid.toString());
-            Path path = Paths.get(workspace).toAbsolutePath().normalize();
-            List<File> files =
-                    Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile).toList();
-            for (File file : files) {
-                if (!file.delete()) {
-                    cleanSuccess = false;
-                    log.info("Failed to delete file: {}", file.getAbsolutePath());
-                }
-            }
-        } catch (IOException e) {
-            return false;
-        }
-        return cleanSuccess;
+        return taskWorkSpace;
     }
 
 }
