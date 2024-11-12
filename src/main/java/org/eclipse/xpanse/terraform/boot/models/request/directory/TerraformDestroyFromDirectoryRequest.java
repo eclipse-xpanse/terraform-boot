@@ -24,7 +24,7 @@ import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 public class TerraformDestroyFromDirectoryRequest {
 
     @Schema(description = "Id of the request")
-    UUID requestId;
+    private UUID requestId;
 
     @NotNull
     @NotBlank

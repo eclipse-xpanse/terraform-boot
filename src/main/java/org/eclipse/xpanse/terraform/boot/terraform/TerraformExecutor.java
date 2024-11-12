@@ -30,14 +30,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class TerraformExecutor {
 
-    private static final String VARS_FILE_NAME = "variables.tfvars.json";
+    private static final String TF_VARS_FILE_NAME = "variables.tfvars.json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
-
-    private final String moduleParentDirectoryPath;
 
     private final SystemCmd systemCmd;
 
@@ -51,15 +49,12 @@ public class TerraformExecutor {
      * Constructor for the TerraformExecutor bean.
      *
      * @param systemCmd                    SystemCmd bean
-     * @param moduleParentDirectoryPath    value of `terraform.root.module.directory` property
      * @param isStdoutStdErrLoggingEnabled value of `log.terraform.stdout.stderr` property
      * @param customTerraformBinary        value of `terraform.binary.location` property
      * @param terraformLogLevel            value of `terraform.log.level` property
      */
     @Autowired
     public TerraformExecutor(SystemCmd systemCmd,
-                             @Value("${terraform.root.module.directory}")
-                             String moduleParentDirectoryPath,
                              @Value("${log.terraform.stdout.stderr:true}")
                              boolean isStdoutStdErrLoggingEnabled,
                              @Value("${terraform.binary.location}")
@@ -67,12 +62,6 @@ public class TerraformExecutor {
                              @Value("${terraform.log.level}")
                              String terraformLogLevel
     ) {
-        if (moduleParentDirectoryPath.isBlank() || moduleParentDirectoryPath.isEmpty()) {
-            this.moduleParentDirectoryPath =
-                    System.getProperty("java.io.tmpdir");
-        } else {
-            this.moduleParentDirectoryPath = moduleParentDirectoryPath;
-        }
         this.systemCmd = systemCmd;
         this.customTerraformBinary = customTerraformBinary;
         this.isStdoutStdErrLoggingEnabled = isStdoutStdErrLoggingEnabled;
@@ -83,10 +72,10 @@ public class TerraformExecutor {
      * Terraform executes init, plan and destroy commands.
      */
     public SystemCmdResult tfDestroy(String executorPath, Map<String, Object> variables,
-                                     Map<String, String> envVariables, String moduleDirectory) {
-        tfPlan(executorPath, variables, envVariables, moduleDirectory);
+                                     Map<String, String> envVariables, String taskWorkspace) {
+        tfPlan(executorPath, variables, envVariables, taskWorkspace);
         SystemCmdResult applyResult = tfDestroyCommand(
-                executorPath, variables, envVariables, getModuleFullPath(moduleDirectory));
+                executorPath, variables, envVariables, taskWorkspace);
         if (!applyResult.isCommandSuccessful()) {
             log.error("TFExecutor.tfDestroy failed.");
             throw new TerraformExecutorException("TFExecutor.tfDestroy failed.",
@@ -99,10 +88,10 @@ public class TerraformExecutor {
      * Terraform executes init, plan and apply commands.
      */
     public SystemCmdResult tfApply(String executorPath, Map<String, Object> variables,
-                                   Map<String, String> envVariables, String moduleDirectory) {
-        tfPlan(executorPath, variables, envVariables, moduleDirectory);
+                                   Map<String, String> envVariables, String taskWorkspace) {
+        tfPlan(executorPath, variables, envVariables, taskWorkspace);
         SystemCmdResult applyResult = tfApplyCommand(executorPath, variables, envVariables,
-                getModuleFullPath(moduleDirectory));
+                taskWorkspace);
         if (!applyResult.isCommandSuccessful()) {
             log.error("TFExecutor.tfApply failed.");
             throw new TerraformExecutorException("TFExecutor.tfApply failed.",
@@ -115,10 +104,10 @@ public class TerraformExecutor {
      * Terraform executes init and plan commands.
      */
     public SystemCmdResult tfPlan(String executorPath, Map<String, Object> variables,
-                                  Map<String, String> envVariables, String moduleDirectory) {
-        tfInit(executorPath, moduleDirectory);
+                                  Map<String, String> envVariables, String taskWorkspace) {
+        tfInit(executorPath, taskWorkspace);
         SystemCmdResult planResult = tfPlanCommand(
-                executorPath, variables, envVariables, getModuleFullPath(moduleDirectory));
+                executorPath, variables, envVariables, taskWorkspace);
         if (!planResult.isCommandSuccessful()) {
             log.error("TFExecutor.tfPlan failed.");
             throw new TerraformExecutorException("TFExecutor.tfPlan failed.",
@@ -131,12 +120,12 @@ public class TerraformExecutor {
      * Method to execute terraform plan and get the plan as a json string.
      */
     public String getTerraformPlanAsJson(String executorPath, Map<String, Object> variables,
-                                         Map<String, String> envVariables, String moduleDirectory) {
-        tfInit(executorPath, moduleDirectory);
+                                         Map<String, String> envVariables, String taskWorkspace) {
+        tfInit(executorPath, taskWorkspace);
         SystemCmdResult tfPlanResult = executeWithVariables(
                 new StringBuilder(getTerraformCommand(executorPath,
                         "plan -input=false -no-color --out tfplan.binary ")),
-                variables, envVariables, getModuleFullPath(moduleDirectory));
+                variables, envVariables, taskWorkspace);
         if (!tfPlanResult.isCommandSuccessful()) {
             log.error("TFExecutor.tfPlan failed.");
             throw new TerraformExecutorException("TFExecutor.tfPlan failed.",
@@ -144,7 +133,7 @@ public class TerraformExecutor {
         }
         SystemCmdResult planJsonResult = execute(
                 getTerraformCommand(executorPath, "show -json tfplan.binary"),
-                getModuleFullPath(moduleDirectory), envVariables);
+                taskWorkspace, envVariables);
         if (!planJsonResult.isCommandSuccessful()) {
             log.error("Reading Terraform plan as JSON failed.");
             throw new TerraformExecutorException("Reading Terraform plan as JSON failed.",
@@ -156,29 +145,22 @@ public class TerraformExecutor {
     /**
      * Terraform executes the init command.
      */
-    public SystemCmdResult tfValidate(String executorPath, String moduleDirectory) {
-        tfInit(executorPath, moduleDirectory);
-        return tfValidateCommand(executorPath, getModuleFullPath(moduleDirectory));
+    public SystemCmdResult tfValidate(String executorPath, String taskWorkspace) {
+        tfInit(executorPath, taskWorkspace);
+        return tfValidateCommand(executorPath, taskWorkspace);
     }
 
     /**
      * Terraform executes the init command.
      */
-    public void tfInit(String executorPath, String moduleDirectory) {
+    public void tfInit(String executorPath, String taskWorkspace) {
         SystemCmdResult initResult =
-                tfInitCommand(executorPath, getModuleFullPath(moduleDirectory));
+                tfInitCommand(executorPath, taskWorkspace);
         if (!initResult.isCommandSuccessful()) {
             log.error("TFExecutor.tfInit failed.");
             throw new TerraformExecutorException("TFExecutor.tfInit failed.",
                     initResult.getCommandStdError());
         }
-    }
-
-    /**
-     * Get the full path of Module.
-     */
-    public String getModuleFullPath(String moduleDirectory) {
-        return this.moduleParentDirectoryPath + File.separator + moduleDirectory;
     }
 
 
@@ -187,9 +169,9 @@ public class TerraformExecutor {
      *
      * @return Returns result of SystemCmd executed.
      */
-    private SystemCmdResult tfInitCommand(String executorPath, String workspace) {
+    private SystemCmdResult tfInitCommand(String executorPath, String taskWorkspace) {
         return execute(getTerraformCommand(executorPath, "init -no-color"),
-                workspace, new HashMap<>());
+                taskWorkspace, new HashMap<>());
     }
 
     /**
@@ -197,9 +179,9 @@ public class TerraformExecutor {
      *
      * @return Returns result of SystemCmd executed.
      */
-    private SystemCmdResult tfValidateCommand(String executorPath, String workspace) {
+    private SystemCmdResult tfValidateCommand(String executorPath, String taskWorkspace) {
         return execute(getTerraformCommand(executorPath, "validate -json -no-color"),
-                workspace, new HashMap<>());
+                taskWorkspace, new HashMap<>());
     }
 
     /**
@@ -208,10 +190,10 @@ public class TerraformExecutor {
      * @return Returns result of SystemCmd executed.
      */
     private SystemCmdResult tfPlanCommand(String executorPath, Map<String, Object> variables,
-                                          Map<String, String> envVariables, String workspace) {
+                                          Map<String, String> envVariables, String taskWorkspace) {
         return executeWithVariables(new StringBuilder(
                         getTerraformCommand(executorPath, "plan -input=false -no-color ")),
-                variables, envVariables, workspace);
+                variables, envVariables, taskWorkspace);
     }
 
     /**
@@ -220,10 +202,10 @@ public class TerraformExecutor {
      * @return Returns result of SystemCmd executed.
      */
     private SystemCmdResult tfApplyCommand(String executorPath, Map<String, Object> variables,
-                                           Map<String, String> envVariables, String workspace) {
+                                           Map<String, String> envVariables, String taskWorkspace) {
         return executeWithVariables(new StringBuilder(getTerraformCommand(
                         executorPath, "apply -auto-approve -input=false -no-color ")),
-                variables, envVariables, workspace);
+                variables, envVariables, taskWorkspace);
     }
 
     /**
@@ -232,10 +214,11 @@ public class TerraformExecutor {
      * @return Returns result of SystemCmd executed.
      */
     private SystemCmdResult tfDestroyCommand(String executorPath, Map<String, Object> variables,
-                                             Map<String, String> envVariables, String workspace) {
+                                             Map<String, String> envVariables,
+                                             String taskWorkspace) {
         return executeWithVariables(new StringBuilder(
                         executorPath + " destroy -auto-approve -input=false -no-color "),
-                variables, envVariables, workspace);
+                variables, envVariables, taskWorkspace);
     }
 
     /**
@@ -246,12 +229,12 @@ public class TerraformExecutor {
     private SystemCmdResult executeWithVariables(StringBuilder command,
                                                  Map<String, Object> variables,
                                                  Map<String, String> envVariables,
-                                                 String workspace) {
-        createVariablesFile(variables, workspace);
+                                                 String taskWorkspace) {
+        createVariablesFile(variables, taskWorkspace);
         command.append(" -var-file=");
-        command.append(VARS_FILE_NAME);
-        SystemCmdResult systemCmdResult = execute(command.toString(), workspace, envVariables);
-        cleanUpVariablesFile(workspace);
+        command.append(TF_VARS_FILE_NAME);
+        SystemCmdResult systemCmdResult = execute(command.toString(), taskWorkspace, envVariables);
+        cleanUpVariablesFile(taskWorkspace);
         return systemCmdResult;
     }
 
@@ -260,10 +243,10 @@ public class TerraformExecutor {
      *
      * @return SystemCmdResult
      */
-    private SystemCmdResult execute(String cmd, String workspace,
+    private SystemCmdResult execute(String cmd, String taskWorkspace,
                                     @NonNull Map<String, String> envVariables) {
         envVariables.putAll(getTerraformLogConfig());
-        return this.systemCmd.execute(cmd, workspace, this.isStdoutStdErrLoggingEnabled,
+        return this.systemCmd.execute(cmd, taskWorkspace, this.isStdoutStdErrLoggingEnabled,
                 envVariables);
     }
 
@@ -279,18 +262,19 @@ public class TerraformExecutor {
         return Collections.singletonMap("TF_LOG", this.terraformLogLevel);
     }
 
-    private void createVariablesFile(Map<String, Object> variables, String workspace) {
+    private void createVariablesFile(Map<String, Object> variables, String taskWorkspace) {
         try {
             log.info("creating variables file");
-            OBJECT_MAPPER.writeValue(new File(getVariablesFilePath(workspace)), variables);
+            File varFile = new File(taskWorkspace, TF_VARS_FILE_NAME);
+            OBJECT_MAPPER.writeValue(varFile, variables);
         } catch (IOException ioException) {
             throw new TerraformExecutorException("Creating variables file failed",
                     ioException.getMessage());
         }
     }
 
-    private void cleanUpVariablesFile(String workspace) {
-        File file = new File(getVariablesFilePath(workspace));
+    private void cleanUpVariablesFile(String taskWorkspace) {
+        File file = new File(taskWorkspace, TF_VARS_FILE_NAME);
         try {
             log.info("cleaning up variables file");
             Files.deleteIfExists(file.toPath());
@@ -299,7 +283,4 @@ public class TerraformExecutor {
         }
     }
 
-    private String getVariablesFilePath(String workspace) {
-        return workspace + File.separator + VARS_FILE_NAME;
-    }
 }

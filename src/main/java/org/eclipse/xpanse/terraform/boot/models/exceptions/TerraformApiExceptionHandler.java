@@ -118,7 +118,7 @@ public class TerraformApiExceptionHandler {
     }
 
     /**
-     * Exception handler for UnsupportedEnumValueException.
+     * Exception handler for InvalidTerraformToolException.
      */
     @ExceptionHandler({InvalidTerraformToolException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -126,6 +126,18 @@ public class TerraformApiExceptionHandler {
     public Response handleInvalidTerraformToolException(
             InvalidTerraformToolException ex) {
         return Response.errorResponse(ResultType.INVALID_TERRAFORM_TOOL,
+                Collections.singletonList(ex.getMessage()));
+    }
+
+    /**
+     * Exception handler for InvalidTerraformScriptsException.
+     */
+    @ExceptionHandler({InvalidTerraformScriptsException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Response handleInvalidTerraformScriptsException(
+            InvalidTerraformScriptsException ex) {
+        return Response.errorResponse(ResultType.INVALID_TERRAFORM_SCRIPTS,
                 Collections.singletonList(ex.getMessage()));
     }
 }

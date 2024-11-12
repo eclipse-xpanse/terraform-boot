@@ -6,6 +6,7 @@
 package org.eclipse.xpanse.terraform.boot.models.validation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -15,6 +16,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TerraformValidateDiagnostics {
 
+    @Schema(description = "Detail of validation error.")
     private String detail;
 
 }
