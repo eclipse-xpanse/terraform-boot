@@ -26,6 +26,7 @@ import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.models.validation.TerraformValidationResult;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -41,6 +42,8 @@ public class TerraformGitRepoService {
     private TerraformScriptsHelper scriptsHelper;
     @Resource
     private TerraformDirectoryService directoryService;
+    @Resource
+    private TerraformResultPersistenceManage terraformResultPersistenceManage;
 
     /**
      * Method of deployment a service using a script.
@@ -135,7 +138,7 @@ public class TerraformGitRepoService {
         result.setRequestId(asyncDeployRequest.getRequestId());
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
         log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
-        restTemplate.postForLocation(url, result);
+        sendTerraformResult(url, result);
     }
 
     /**
@@ -159,7 +162,7 @@ public class TerraformGitRepoService {
         result.setRequestId(asyncModifyRequest.getRequestId());
         String url = asyncModifyRequest.getWebhookConfig().getUrl();
         log.info("Modify service complete, callback POST url:{}, requestBody:{}", url, result);
-        restTemplate.postForLocation(url, result);
+        sendTerraformResult(url, result);
     }
 
 
@@ -184,9 +187,16 @@ public class TerraformGitRepoService {
         result.setRequestId(request.getRequestId());
         String url = request.getWebhookConfig().getUrl();
         log.info("Destroy service complete, callback POST url:{}, requestBody:{}", url, result);
-        restTemplate.postForLocation(url, result);
+        sendTerraformResult(url, result);
     }
 
+    private void sendTerraformResult(String url, TerraformResult result) {
+        try {
+            restTemplate.postForLocation(url, result);
+        } catch (RestClientException e) {
+            terraformResultPersistenceManage.persistTerraformResult(result);
+        }
+    }
 
     private String getScriptsLocationInTaskWorkspace(
             TerraformScriptGitRepoDetails terraformScriptGitRepoDetails, String taskWorkSpace) {

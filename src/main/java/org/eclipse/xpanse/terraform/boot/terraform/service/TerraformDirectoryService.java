@@ -35,6 +35,7 @@ import org.eclipse.xpanse.terraform.boot.terraform.utils.SystemCmdResult;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -58,6 +59,8 @@ public class TerraformDirectoryService {
     private TerraformVersionsHelper versionHelper;
     @Resource
     private TerraformScriptsHelper scriptsHelper;
+    @Resource
+    private TerraformResultPersistenceManage terraformResultPersistenceManage;
 
     /**
      * Perform Terraform health checks by creating a Terraform test configuration file.
@@ -226,7 +229,7 @@ public class TerraformDirectoryService {
         result.setRequestId(asyncDeployRequest.getRequestId());
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
         log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
-        restTemplate.postForLocation(url, result);
+        sendTerraformResult(url, result);
     }
 
     /**
@@ -247,7 +250,7 @@ public class TerraformDirectoryService {
         result.setRequestId(asyncModifyRequest.getRequestId());
         String url = asyncModifyRequest.getWebhookConfig().getUrl();
         log.info("Deployment service complete, callback POST url:{}, requestBody:{}", url, result);
-        restTemplate.postForLocation(url, result);
+        sendTerraformResult(url, result);
     }
 
     /**
@@ -268,7 +271,15 @@ public class TerraformDirectoryService {
         result.setRequestId(request.getRequestId());
         String url = request.getWebhookConfig().getUrl();
         log.info("Destroy service complete, callback POST url:{}, requestBody:{}", url, result);
-        restTemplate.postForLocation(url, result);
+        sendTerraformResult(url, result);
+    }
+
+    private void sendTerraformResult(String url, TerraformResult result) {
+        try {
+            restTemplate.postForLocation(url, result);
+        } catch (RestClientException e) {
+            terraformResultPersistenceManage.persistTerraformResult(result);
+        }
     }
 
     private TerraformResult transSystemCmdResultToTerraformResult(
