@@ -22,7 +22,8 @@ public enum ResultType {
     UNAUTHORIZED("Unauthorized"),
     INVALID_GIT_REPO_DETAILS("Invalid Git Repo Details"),
     INVALID_TERRAFORM_TOOL("Invalid Terraform Tool"),
-    INVALID_TERRAFORM_SCRIPTS("Invalid Terraform Scripts");
+    INVALID_TERRAFORM_SCRIPTS("Invalid Terraform Scripts"),
+    RESULT_ALREADY_RETURNED_OR_REQUEST_ID_INVALID("Result Already Returned or RequestId Invalid");
 
     private final String value;
 

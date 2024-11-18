@@ -140,4 +140,16 @@ public class TerraformApiExceptionHandler {
         return Response.errorResponse(ResultType.INVALID_TERRAFORM_SCRIPTS,
                 Collections.singletonList(ex.getMessage()));
     }
+
+    /**
+     * Exception handler for ResultAlreadyReturnedOrRequestIdInvalidException.
+     */
+    @ExceptionHandler({ResultAlreadyReturnedOrRequestIdInvalidException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public Response handleResultAlreadyReturnedOrRequestIdInvalidException(
+            ResultAlreadyReturnedOrRequestIdInvalidException ex) {
+        return Response.errorResponse(ResultType.RESULT_ALREADY_RETURNED_OR_REQUEST_ID_INVALID,
+                Collections.singletonList(ex.getMessage()));
+    }
 }
