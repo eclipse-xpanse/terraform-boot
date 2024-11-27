@@ -16,6 +16,7 @@ import org.eclipse.xpanse.terraform.boot.models.exceptions.ResultAlreadyReturned
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.utils.TerraformResultSerializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,10 +27,16 @@ import org.springframework.stereotype.Component;
 public class TerraformResultPersistenceManage {
 
     private static final String TF_RESULT_FILE_SUFFIX = ".dat";
+    private static final String TF_LOCK_FILE_NAME = ".terraform.tfstate.lock.info";
 
     @Value("${failed.callback.response.store.location}")
     private String failedCallbackStoreLocation;
 
+    @Value("${clean.workspace.after.deployment.enabled:true}")
+    private Boolean cleanWorkspaceAfterDeployment;
+
+    @Resource
+    private TerraformScriptsHelper scriptsHelper;
     @Resource
     private TerraformResultSerializer terraformResultSerializer;
 
@@ -64,10 +71,13 @@ public class TerraformResultPersistenceManage {
      * @param requestId requestId.
      * @return TerraformResult.
      */
-    public TerraformResult retrieveTerraformResultByRequestId(String requestId) {
+    public ResponseEntity<TerraformResult> retrieveTerraformResultByRequestId(String requestId) {
         String filePath = getFilePath(UUID.fromString(requestId));
         File resultFile = new File(filePath + File.separator + requestId + TF_RESULT_FILE_SUFFIX);
         if (!resultFile.exists() && !resultFile.isFile()) {
+            if (isDeployingInProgress(requestId)) {
+                return ResponseEntity.noContent().build();
+            }
             throw new ResultAlreadyReturnedOrRequestIdInvalidException(
                     "Result file does not exist: " + resultFile.getAbsolutePath());
         }
@@ -77,11 +87,23 @@ public class TerraformResultPersistenceManage {
                     .deserialize(terraformResultData);
             fis.close();
             deleteResultFileAndDirectory(new File(filePath));
-            return terraformResult;
+            return ResponseEntity.ok(terraformResult);
         } catch (IOException e) {
             log.error("Failed to retrieve TerraformResult for requestId: {}", requestId, e);
             throw new ResultAlreadyReturnedOrRequestIdInvalidException(
                     "Failed to retrieve TerraformResult for requestId: " + requestId);
+        }
+    }
+
+    private boolean isDeployingInProgress(String requestId) {
+        String workspace = scriptsHelper.buildTaskWorkspace(requestId);
+        File targetFile;
+        if (cleanWorkspaceAfterDeployment) {
+            targetFile = new File(workspace);
+            return targetFile.exists() && targetFile.isDirectory();
+        } else {
+            targetFile = new File(workspace, TF_LOCK_FILE_NAME);
+            return targetFile.exists() && targetFile.isFile();
         }
     }
 
