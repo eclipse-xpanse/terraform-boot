@@ -14,6 +14,7 @@ import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.eclipse.xpanse.terraform.boot.terraform.service.TerraformResultPersistenceManage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +41,7 @@ public class TerraformBootTaskResultApi {
     @GetMapping(value = "/result/{requestId}", produces =
             MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public TerraformResult getStoredTaskResultByRequestId(
+    public ResponseEntity<TerraformResult> getStoredTaskResultByRequestId(
             @Parameter(name = "requestId",
                     description = "id of the request")
             @PathVariable("requestId") String requestId) {
