@@ -44,7 +44,7 @@ public class TerraformVersionsFetcher {
     private String terraformGithubApiEndpoint;
     @Value("${terraform.github.repository:hashicorp/terraform}")
     private String terraformGithubRepository;
-    @Value("${terraform.versions}")
+    @Value("${terraform.default.supported.versions}")
     private String defaultVersionsString;
 
 
