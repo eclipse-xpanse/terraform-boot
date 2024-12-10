@@ -14,4 +14,4 @@ RUN echo "Downloading and installing Terraform with multiple versions $TERRAFORM
 
 COPY target/terraform-boot-*.jar terraform-boot.jar
 USER terraform-boot
-ENTRYPOINT ["java", "-Dterraform.install.dir=${TERRAFORM_INSTALL_PATH}", "-Dterraform.versions=${TERRAFORM_VERSIONS}", "-jar", "terraform-boot.jar"]
+ENTRYPOINT ["java", "-Dterraform.install.dir=${TERRAFORM_INSTALL_PATH}", "-Dterraform.default.supported.versions=${TERRAFORM_VERSIONS}", "-jar", "terraform-boot.jar"]

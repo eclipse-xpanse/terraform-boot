@@ -11,6 +11,7 @@ import static org.eclipse.xpanse.terraform.boot.cache.CaffeineCacheConfig.TERRAF
 import jakarta.annotation.Resource;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class TerraformVersionsCache {
 
+    @Value("${support.default.terraform.versions.only:true}")
+    private boolean getDefaultVersionsOnly;
     @Resource
     private TerraformVersionsFetcher versionsFetcher;
 
@@ -31,6 +34,9 @@ public class TerraformVersionsCache {
      */
     @Cacheable(value = TERRAFORM_VERSIONS_CACHE_NAME, key = "'all'")
     public Set<String> getAvailableVersions() {
+        if (getDefaultVersionsOnly) {
+            return versionsFetcher.getDefaultVersionsFromConfig();
+        }
         try {
             return versionsFetcher.fetchAvailableVersionsFromTerraformWebsite();
         } catch (Exception e) {
