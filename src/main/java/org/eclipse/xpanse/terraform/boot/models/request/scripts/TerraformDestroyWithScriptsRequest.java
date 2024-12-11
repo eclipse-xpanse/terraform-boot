@@ -12,9 +12,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDestroyFromDirectoryRequest;
 
-/**
- * Terraform uses the request object destroy by the script.
- */
+/** Terraform uses the request object destroy by the script. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformDestroyWithScriptsRequest extends TerraformDestroyFromDirectoryRequest {

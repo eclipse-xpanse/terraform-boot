@@ -5,9 +5,7 @@
 
 package org.eclipse.xpanse.terraform.boot.models.exceptions;
 
-/**
- * Used to indicate Terraform health check anomalies.
- */
+/** Used to indicate Terraform health check anomalies. */
 public class TerraformHealthCheckException extends RuntimeException {
 
     public TerraformHealthCheckException(String message) {

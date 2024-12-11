@@ -11,9 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDestroyFromDirectoryRequest;
 
-/**
- * Data model for terraform destroy requests using scripts from a GIT Repo.
- */
+/** Data model for terraform destroy requests using scripts from a GIT Repo. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformDestroyFromGitRepoRequest extends TerraformDestroyFromDirectoryRequest {

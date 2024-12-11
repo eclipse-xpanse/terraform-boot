@@ -27,92 +27,77 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-/**
- * Terraform service classes are deployed form Scripts.
- */
+/** Terraform service classes are deployed form Scripts. */
 @Slf4j
 @Service
 public class TerraformScriptsService {
 
-    @Resource
-    private RestTemplate restTemplate;
-    @Resource
-    private TerraformScriptsHelper scriptsHelper;
-    @Resource
-    private TerraformDirectoryService directoryService;
-    @Resource
-    private TerraformResultPersistenceManage terraformResultPersistenceManage;
+    @Resource private RestTemplate restTemplate;
+    @Resource private TerraformScriptsHelper scriptsHelper;
+    @Resource private TerraformDirectoryService directoryService;
+    @Resource private TerraformResultPersistenceManage terraformResultPersistenceManage;
 
-    /**
-     * /**
-     * Method of deployment a service using a script.
-     */
+    /** /** Method of deployment a service using a script. */
     public TerraformValidationResult validateWithScripts(
             TerraformDeployWithScriptsRequest request) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(UUID.randomUUID().toString());
         scriptsHelper.prepareDeploymentFilesWithScripts(taskWorkspace, request.getScripts(), null);
-        return directoryService.tfValidateFromDirectory(taskWorkspace,
-                request.getTerraformVersion());
+        return directoryService.tfValidateFromDirectory(
+                taskWorkspace, request.getTerraformVersion());
     }
 
-    /**
-     * Method of deployment a service using a script.
-     */
+    /** Method of deployment a service using a script. */
     public TerraformResult deployWithScripts(TerraformDeployWithScriptsRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
         List<File> files =
-                scriptsHelper.prepareDeploymentFilesWithScripts(taskWorkspace, request.getScripts(),
-                        null);
+                scriptsHelper.prepareDeploymentFilesWithScripts(
+                        taskWorkspace, request.getScripts(), null);
         return directoryService.deployFromDirectory(request, taskWorkspace, files);
     }
 
-    /**
-     * Method of modify a service using a script.
-     */
+    /** Method of modify a service using a script. */
     public TerraformResult modifyWithScripts(TerraformModifyWithScriptsRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
         List<File> files =
-                scriptsHelper.prepareDeploymentFilesWithScripts(taskWorkspace, request.getScripts(),
-                        request.getTfState());
+                scriptsHelper.prepareDeploymentFilesWithScripts(
+                        taskWorkspace, request.getScripts(), request.getTfState());
         return directoryService.modifyFromDirectory(request, taskWorkspace, files);
     }
 
-    /**
-     * Method of destroy a service using a script.
-     */
-    public TerraformResult destroyWithScripts(TerraformDestroyWithScriptsRequest request,
-                                              UUID uuid) {
+    /** Method of destroy a service using a script. */
+    public TerraformResult destroyWithScripts(
+            TerraformDestroyWithScriptsRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
         List<File> files =
-                scriptsHelper.prepareDeploymentFilesWithScripts(taskWorkspace, request.getScripts(),
-                        request.getTfState());
+                scriptsHelper.prepareDeploymentFilesWithScripts(
+                        taskWorkspace, request.getScripts(), request.getTfState());
         return directoryService.destroyFromDirectory(request, taskWorkspace, files);
     }
 
-    /**
-     * Method to get terraform plan.
-     */
-    public TerraformPlan getTerraformPlanFromScripts(TerraformPlanWithScriptsRequest request,
-                                                     UUID uuid) {
+    /** Method to get terraform plan. */
+    public TerraformPlan getTerraformPlanFromScripts(
+            TerraformPlanWithScriptsRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
         scriptsHelper.prepareDeploymentFilesWithScripts(taskWorkspace, request.getScripts(), null);
         return directoryService.getTerraformPlanFromDirectory(request, uuid.toString());
     }
 
-    /**
-     * Async deploy a source by terraform.
-     */
+    /** Async deploy a source by terraform. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncDeployWithScripts(TerraformAsyncDeployFromScriptsRequest asyncDeployRequest,
-                                       UUID uuid) {
+    public void asyncDeployWithScripts(
+            TerraformAsyncDeployFromScriptsRequest asyncDeployRequest, UUID uuid) {
         TerraformResult result;
         try {
             result = deployWithScripts(asyncDeployRequest, uuid);
         } catch (RuntimeException e) {
             result =
-                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
-                            .isCommandSuccessful(false).terraformState(null)
-                            .generatedFileContentMap(new HashMap<>()).build();
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(asyncDeployRequest.getRequestId());
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
@@ -120,20 +105,22 @@ public class TerraformScriptsService {
         sendTerraformResult(url, result);
     }
 
-    /**
-     * Async modify a source by terraform.
-     */
+    /** Async modify a source by terraform. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncModifyWithScripts(TerraformAsyncModifyFromScriptsRequest asyncModifyRequest,
-                                       UUID uuid) {
+    public void asyncModifyWithScripts(
+            TerraformAsyncModifyFromScriptsRequest asyncModifyRequest, UUID uuid) {
         TerraformResult result;
         try {
             result = modifyWithScripts(asyncModifyRequest, uuid);
         } catch (RuntimeException e) {
             result =
-                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
-                            .isCommandSuccessful(false).terraformState(null)
-                            .generatedFileContentMap(new HashMap<>()).build();
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(asyncModifyRequest.getRequestId());
         String url = asyncModifyRequest.getWebhookConfig().getUrl();
@@ -141,20 +128,22 @@ public class TerraformScriptsService {
         sendTerraformResult(url, result);
     }
 
-    /**
-     * Async destroy resource of the service.
-     */
+    /** Async destroy resource of the service. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncDestroyWithScripts(TerraformAsyncDestroyFromScriptsRequest request,
-                                        UUID uuid) {
+    public void asyncDestroyWithScripts(
+            TerraformAsyncDestroyFromScriptsRequest request, UUID uuid) {
         TerraformResult result;
         try {
             result = destroyWithScripts(request, uuid);
         } catch (RuntimeException e) {
             result =
-                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
-                            .isCommandSuccessful(false).terraformState(null)
-                            .generatedFileContentMap(new HashMap<>()).build();
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(request.getRequestId());
         String url = request.getWebhookConfig().getUrl();

@@ -5,9 +5,7 @@
 
 package org.eclipse.xpanse.terraform.boot.models.exceptions;
 
-/**
- * Defines possible exceptions returned by Terraform scripts invalid.
- */
+/** Defines possible exceptions returned by Terraform scripts invalid. */
 public class InvalidTerraformScriptsException extends RuntimeException {
 
     public InvalidTerraformScriptsException(String message) {

@@ -10,9 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.eclipse.xpanse.terraform.boot.models.enums.AuthType;
 
-/**
- * Configuration information class of webhook.
- */
+/** Configuration information class of webhook. */
 @Data
 public class WebhookConfig {
 

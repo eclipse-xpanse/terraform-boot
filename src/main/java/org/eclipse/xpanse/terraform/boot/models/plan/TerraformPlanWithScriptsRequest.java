@@ -11,16 +11,14 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/**
- * Data model for the generating terraform plan.
- */
+/** Data model for the generating terraform plan. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformPlanWithScriptsRequest extends TerraformPlanFromDirectoryRequest {
 
     @NotNull
-    @Schema(description =
-            "List of terraform script files to be considered for generating terraform plan")
+    @Schema(
+            description =
+                    "List of terraform script files to be considered for generating terraform plan")
     private List<String> scripts;
-
 }

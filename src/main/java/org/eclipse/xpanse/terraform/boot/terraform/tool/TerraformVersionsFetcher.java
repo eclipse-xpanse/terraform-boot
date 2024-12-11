@@ -31,36 +31,41 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Component;
 
-/**
- * Class to get available versions of Terraform.
- */
+/** Class to get available versions of Terraform. */
 @Slf4j
 @Component
 public class TerraformVersionsFetcher {
 
     private static final Pattern OFFICIAL_VERSION_PATTERN =
             Pattern.compile("^v(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})$");
+
     @Value("${terraform.github.api.endpoint:https://api.github.com}")
     private String terraformGithubApiEndpoint;
+
     @Value("${terraform.github.repository:hashicorp/terraform}")
     private String terraformGithubRepository;
+
     @Value("${terraform.default.supported.versions}")
     private String defaultVersionsString;
-
 
     /**
      * Fetch all available versions from Terraform website.
      *
      * @return all available versions from Terraform website.
      */
-    @Retryable(retryFor = Exception.class,
+    @Retryable(
+            retryFor = Exception.class,
             maxAttemptsExpression = "${spring.retry.max-attempts}",
             backoff = @Backoff(delayExpression = "${spring.retry.delay-millions}"))
     public Set<String> fetchAvailableVersionsFromTerraformWebsite() throws Exception {
-        int retryCount = Objects.isNull(RetrySynchronizationManager.getContext())
-                ? 0 : RetrySynchronizationManager.getContext().getRetryCount();
-        log.info("Start to fetch available versions from website for Terraform."
-                + " Retry count: {}", retryCount);
+        int retryCount =
+                Objects.isNull(RetrySynchronizationManager.getContext())
+                        ? 0
+                        : RetrySynchronizationManager.getContext().getRetryCount();
+        log.info(
+                "Start to fetch available versions from website for Terraform."
+                        + " Retry count: {}",
+                retryCount);
         Set<String> allVersions = new HashSet<>();
         try {
             if (!isEndpointReachable(terraformGithubApiEndpoint)) {
@@ -68,26 +73,32 @@ public class TerraformVersionsFetcher {
                 log.error(errorMsg);
                 throw new IOException(errorMsg);
             }
-            GitHub gitHub = new GitHubBuilder()
-                    .withEndpoint(terraformGithubApiEndpoint)
-                    .withRateLimitHandler(getGithubRateLimitHandler())
-                    .build();
+            GitHub gitHub =
+                    new GitHubBuilder()
+                            .withEndpoint(terraformGithubApiEndpoint)
+                            .withRateLimitHandler(getGithubRateLimitHandler())
+                            .build();
             GHRepository repository = gitHub.getRepository(terraformGithubRepository);
             PagedIterable<GHTag> tags = repository.listTags();
-            tags.forEach(tag -> {
-                String version = tag.getName();
-                if (OFFICIAL_VERSION_PATTERN.matcher(version).matches()) {
-                    // remove the prefix 'v'
-                    allVersions.add(version.substring(1));
-                }
-            });
+            tags.forEach(
+                    tag -> {
+                        String version = tag.getName();
+                        if (OFFICIAL_VERSION_PATTERN.matcher(version).matches()) {
+                            // remove the prefix 'v'
+                            allVersions.add(version.substring(1));
+                        }
+                    });
         } catch (Exception e) {
-            log.error("Failed to fetch available versions from Terraform website. Retry count: {}.",
-                    retryCount, e);
+            log.error(
+                    "Failed to fetch available versions from Terraform website. Retry count: {}.",
+                    retryCount,
+                    e);
             throw e;
         }
-        log.info("Get available versions: {} from Terraform website. Retry count: {}",
-                allVersions, retryCount);
+        log.info(
+                "Get available versions: {} from Terraform website. Retry count: {}",
+                allVersions,
+                retryCount);
         if (allVersions.isEmpty()) {
             String errorMsg = "No available versions found from Terraform website";
             throw new InvalidTerraformToolException(errorMsg);
@@ -115,8 +126,10 @@ public class TerraformVersionsFetcher {
     public Set<String> getDefaultVersionsFromConfig() {
         Set<String> defaultVersions =
                 Set.of(defaultVersionsString.replaceAll("//s+", "").split(","));
-        log.info("Get default versions: {} from Terraform versions config value: {}",
-                defaultVersions, defaultVersionsString);
+        log.info(
+                "Get default versions: {} from Terraform versions config value: {}",
+                defaultVersions,
+                defaultVersionsString);
         return defaultVersions;
     }
 
@@ -127,11 +140,13 @@ public class TerraformVersionsFetcher {
                 String limit = response.header("X-RateLimit-Limit");
                 String remaining = response.header("X-RateLimit-Remaining");
                 String reset = response.header("X-RateLimit-Reset");
-                String errorMsg = String.format("GitHub API rate limit exceeded. "
-                        + "Rate limit: %s, remaining: %s, reset time: %s", limit, remaining, reset);
+                String errorMsg =
+                        String.format(
+                                "GitHub API rate limit exceeded. "
+                                        + "Rate limit: %s, remaining: %s, reset time: %s",
+                                limit, remaining, reset);
                 throw new IOException(errorMsg);
             }
         };
     }
-
 }

@@ -11,9 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDeployFromDirectoryRequest;
 
-/**
- * Data model for terraform deploy requests using scripts from a GIT Repo.
- */
+/** Data model for terraform deploy requests using scripts from a GIT Repo. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformDeployFromGitRepoRequest extends TerraformDeployFromDirectoryRequest {

@@ -1,15 +1,15 @@
 <p align='center'>
 <a href="https://github.com/eclipse-xpanse/terraform-boot/actions/workflows/ci.yml" target="_blank">
-    <img src="https://github.com/eclipse-xpanse/terraform-boot/actions/workflows/ci.yml/badge.svg" alt="build">
+	<img src="https://github.com/eclipse-xpanse/terraform-boot/actions/workflows/ci.yml/badge.svg" alt="build">
 </a>
 <a href="https://opensource.org/licenses/Apache-2.0" target="_blank">
-    <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="coverage">
-  </a>
+	<img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="coverage">
+</a>
 </p>
 
 # terraform-boot
 
-A spring-boot-based project which aims to provide a RESTful API for Terraform CLI. It provides three different modes of 
+A spring-boot-based project which aims to provide a RESTful API for Terraform CLI. It provides three different modes of
 execution
 
 1. Scripts in a directory
@@ -42,8 +42,8 @@ the files and return terraform execution result.
 
 ### Scripts in GIT Repo
 
-If the scripts are present in a GIT repo, then we can directly pass the details of the GIT repo. Terraform-boot will 
-clone the repo and execute the scripts and then return the result. 
+If the scripts are present in a GIT repo, then we can directly pass the details of the GIT repo. Terraform-boot will
+clone the repo and execute the scripts and then return the result.
 
 > [!NOTE]
 > Currently supports only repos that can be cloned without authentication and also with HTTP(S) only.
@@ -124,15 +124,15 @@ $ java -jar target/terraform-boot-*.jar
 
 1.Start with oauth
 
-    1.Set values for the authorization related variables in the application-oauth-properties configuration file, 
-      and specify the configuration file for loading oauth in the application-properties configuration file, 
-      start the main application.
-    2.Or the oauth related variables configuration can be added to IDE and the main application can be executed directly
-      to launch the application.
+	1.Set values for the authorization related variables in the application-oauth-properties configuration file,
+	and specify the configuration file for loading oauth in the application-properties configuration file,
+	start the main application.
+	2.Or the oauth related variables configuration can be added to IDE and the main application can be executed directly
+	to launch the application.
 
 2.Start without oauth
 
-    Simply start the main application.
+	Simply start the main application.
 
 API can be accessed using the following URLs
 
@@ -168,3 +168,19 @@ value of `otel.exporter.otlp.endpoint` configuration property.
 ## Dependencies File
 
 All third-party related content is listed in the [DEPENDENCIES](DEPENDENCIES) file.
+
+## Code Formatter
+
+The project follows [google-code-format](https://github.com/google/google-java-format).
+We use the [spotless plugin](https://github.com/diffplug/spotless/tree/main/plugin-maven#google-java-format) to format code and to validate code format.
+We can automatically format the code using the command below.
+
+```shell
+mvn spotless:apply
+```
+
+To validate errors we can run the command below.
+
+```shell
+mvn spotless:check &&  mvn checkstyle:check
+```
