@@ -11,23 +11,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-
-/**
- * Configuration springdoc openAPI.
- */
+/** Configuration springdoc openAPI. */
 @Configuration
 public class SpringDocOpenApiConfig {
 
     @Value("${app.version:1.0.0}")
     private String version;
 
-    /**
-     * Configuration openAPI.
-     */
+    /** Configuration openAPI. */
     @Bean
     public OpenAPI configOpenApi() {
-        return new OpenAPI().info(new Info().title("Terraform-Boot API")
-                .description("RESTful Services to interact with terraform CLI")
-                .version(version));
+        return new OpenAPI()
+                .info(
+                        new Info()
+                                .title("Terraform-Boot API")
+                                .description("RESTful Services to interact with terraform CLI")
+                                .version(version));
     }
 }

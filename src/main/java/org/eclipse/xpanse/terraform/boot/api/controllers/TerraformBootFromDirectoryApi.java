@@ -46,39 +46,42 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * REST controller for running terraform modules directly on the provided directory.
- */
+/** REST controller for running terraform modules directly on the provided directory. */
 @Slf4j
 @CrossOrigin
 @RestController
 @RequestMapping("/terraform-boot/directory")
 public class TerraformBootFromDirectoryApi {
 
-    @Resource
-    private TerraformDirectoryService directoryService;
-    @Resource
-    private TerraformScriptsHelper scriptsHelper;
+    @Resource private TerraformDirectoryService directoryService;
+    @Resource private TerraformScriptsHelper scriptsHelper;
 
     /**
      * Method to validate Terraform modules.
      *
      * @return Returns the validation status of the Terraform module in a workspace.
      */
-    @Tag(name = "TerraformFromDirectory", description =
-            "APIs for running Terraform commands inside a provided directory.")
+    @Tag(
+            name = "TerraformFromDirectory",
+            description = "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "Validate the Terraform modules in the given directory.")
-    @GetMapping(value = "/validate/{module_directory}/{terraform_version}", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(
+            value = "/validate/{module_directory}/{terraform_version}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformValidationResult validateFromDirectory(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
-            @Parameter(name = "terraform_version",
-                    description = "version of Terraform to execute the module files.")
-            @NotBlank @Pattern(regexp = TerraformVersionsHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
-            @PathVariable("terraform_version") String terraformVersion) {
+            @Parameter(
+                            name = "module_directory",
+                            description = "directory name where the Terraform module files exist.")
+                    @PathVariable("module_directory")
+                    String moduleDirectory,
+            @Parameter(
+                            name = "terraform_version",
+                            description = "version of Terraform to execute the module files.")
+                    @NotBlank
+                    @Pattern(regexp = TerraformVersionsHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
+                    @PathVariable("terraform_version")
+                    String terraformVersion) {
         UUID uuid = UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         return directoryService.tfValidateFromDirectory(moduleDirectory, terraformVersion);
@@ -89,18 +92,23 @@ public class TerraformBootFromDirectoryApi {
      *
      * @return Returns the status of the deployment.
      */
-    @Tag(name = "TerraformFromDirectory", description =
-            "APIs for running Terraform commands inside a provided directory.")
+    @Tag(
+            name = "TerraformFromDirectory",
+            description = "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "Deploy resources via Terraform from the given directory.")
     @PostMapping(value = "/deploy/{module_directory}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult deployFromDirectory(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
+            @Parameter(
+                            name = "module_directory",
+                            description = "directory name where the Terraform module files exist.")
+                    @PathVariable("module_directory")
+                    String moduleDirectory,
             @Valid @RequestBody TerraformDeployFromDirectoryRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
@@ -112,18 +120,23 @@ public class TerraformBootFromDirectoryApi {
      *
      * @return Returns the status of the deployment.
      */
-    @Tag(name = "TerraformFromDirectory", description =
-            "APIs for running Terraform commands inside a provided directory.")
+    @Tag(
+            name = "TerraformFromDirectory",
+            description = "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "Modify resources via Terraform from the given directory.")
     @PostMapping(value = "/modify/{module_directory}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult modifyFromDirectory(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
+            @Parameter(
+                            name = "module_directory",
+                            description = "directory name where the Terraform module files exist.")
+                    @PathVariable("module_directory")
+                    String moduleDirectory,
             @Valid @RequestBody TerraformModifyFromDirectoryRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
@@ -135,19 +148,25 @@ public class TerraformBootFromDirectoryApi {
      *
      * @return Returns the status of the resources destroy.
      */
-    @Tag(name = "TerraformFromDirectory", description =
-            "APIs for running Terraform commands inside a provided directory.")
+    @Tag(
+            name = "TerraformFromDirectory",
+            description = "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "Destroy the resources from the given directory.")
-    @DeleteMapping(value = "/destroy/{module_directory}",
+    @DeleteMapping(
+            value = "/destroy/{module_directory}",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult destroyFromDirectory(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
+            @Parameter(
+                            name = "module_directory",
+                            description = "directory name where the Terraform module files exist.")
+                    @PathVariable("module_directory")
+                    String moduleDirectory,
             @Valid @RequestBody TerraformDestroyFromDirectoryRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
@@ -159,85 +178,101 @@ public class TerraformBootFromDirectoryApi {
      *
      * @return Returns the terraform plan as a JSON string.
      */
-    @Tag(name = "TerraformFromDirectory", description =
-            "APIs for running Terraform commands inside a provided directory.")
+    @Tag(
+            name = "TerraformFromDirectory",
+            description = "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "Get Terraform Plan as JSON string from the given directory.")
-    @PostMapping(value = "/plan/{module_directory}",
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/plan/{module_directory}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformPlan plan(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
+            @Parameter(
+                            name = "module_directory",
+                            description = "directory name where the Terraform module files exist.")
+                    @PathVariable("module_directory")
+                    String moduleDirectory,
             @Valid @RequestBody TerraformPlanFromDirectoryRequest request,
             @RequestHeader(name = "X-Custom-RequestId", required = false) UUID uuid) {
-        uuid = Objects.nonNull(request.getRequestId()) ? request.getRequestId()
-                : (Objects.nonNull(uuid) ? uuid : UUID.randomUUID());
+        uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : (Objects.nonNull(uuid) ? uuid : UUID.randomUUID());
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         return directoryService.getTerraformPlanFromDirectory(request, moduleDirectory);
     }
 
-    /**
-     * Method to async deploy resources from the given directory.
-     */
-    @Tag(name = "TerraformFromDirectory", description =
-            "APIs for running Terraform commands inside a provided directory.")
+    /** Method to async deploy resources from the given directory. */
+    @Tag(
+            name = "TerraformFromDirectory",
+            description = "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "async deploy resources via Terraform from the given directory.")
-    @PostMapping(value = "/deploy/async/{module_directory}", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/deploy/async/{module_directory}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncDeployFromDirectory(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
+            @Parameter(
+                            name = "module_directory",
+                            description = "directory name where the Terraform module files exist.")
+                    @PathVariable("module_directory")
+                    String moduleDirectory,
             @Valid @RequestBody TerraformAsyncDeployFromDirectoryRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
         directoryService.asyncDeployWithScripts(request, moduleDirectory, scriptFiles);
     }
 
-    /**
-     * Method to async modify resources from the given directory.
-     */
-    @Tag(name = "TerraformFromDirectory", description =
-            "APIs for running Terraform commands inside a provided directory.")
+    /** Method to async modify resources from the given directory. */
+    @Tag(
+            name = "TerraformFromDirectory",
+            description = "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "async modify resources via Terraform from the given directory.")
-    @PostMapping(value = "/modify/async/{module_directory}", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/modify/async/{module_directory}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncModifyFromDirectory(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
+            @Parameter(
+                            name = "module_directory",
+                            description = "directory name where the Terraform module files exist.")
+                    @PathVariable("module_directory")
+                    String moduleDirectory,
             @Valid @RequestBody TerraformAsyncModifyFromDirectoryRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);
         directoryService.asyncModifyWithScripts(request, moduleDirectory, scriptFiles);
     }
 
-    /**
-     * Method to async destroy resources from the given directory.
-     */
-    @Tag(name = "TerraformFromDirectory", description =
-            "APIs for running Terraform commands inside a provided directory.")
+    /** Method to async destroy resources from the given directory. */
+    @Tag(
+            name = "TerraformFromDirectory",
+            description = "APIs for running Terraform commands inside a provided directory.")
     @Operation(description = "async destroy resources via Terraform from the given directory.")
-    @DeleteMapping(value = "/destroy/async/{module_directory}",
+    @DeleteMapping(
+            value = "/destroy/async/{module_directory}",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncDestroyFromDirectory(
-            @Parameter(name = "module_directory",
-                    description = "directory name where the Terraform module files exist.")
-            @PathVariable("module_directory") String moduleDirectory,
+            @Parameter(
+                            name = "module_directory",
+                            description = "directory name where the Terraform module files exist.")
+                    @PathVariable("module_directory")
+                    String moduleDirectory,
             @Valid @RequestBody TerraformAsyncDestroyFromDirectoryRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         List<File> scriptFiles = scriptsHelper.getDeploymentFilesFromTaskWorkspace(moduleDirectory);

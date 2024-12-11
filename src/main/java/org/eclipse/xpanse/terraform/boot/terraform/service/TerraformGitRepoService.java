@@ -29,111 +29,97 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-/**
- * Bean to manage all Terraform execution using scripts from a GIT Repo.
- */
+/** Bean to manage all Terraform execution using scripts from a GIT Repo. */
 @Slf4j
 @Component
 public class TerraformGitRepoService {
 
-    @Resource
-    private RestTemplate restTemplate;
-    @Resource
-    private TerraformScriptsHelper scriptsHelper;
-    @Resource
-    private TerraformDirectoryService directoryService;
-    @Resource
-    private TerraformResultPersistenceManage terraformResultPersistenceManage;
+    @Resource private RestTemplate restTemplate;
+    @Resource private TerraformScriptsHelper scriptsHelper;
+    @Resource private TerraformDirectoryService directoryService;
+    @Resource private TerraformResultPersistenceManage terraformResultPersistenceManage;
 
-    /**
-     * Method of deployment a service using a script.
-     */
+    /** Method of deployment a service using a script. */
     public TerraformValidationResult validateWithScripts(
             TerraformDeployFromGitRepoRequest request) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(UUID.randomUUID().toString());
         scriptsHelper.prepareDeploymentFilesWithGitRepo(
                 taskWorkspace, request.getGitRepoDetails(), null);
-        String scriptsPath = getScriptsLocationInTaskWorkspace(
-                request.getGitRepoDetails(), taskWorkspace);
+        String scriptsPath =
+                getScriptsLocationInTaskWorkspace(request.getGitRepoDetails(), taskWorkspace);
         return directoryService.tfValidateFromDirectory(scriptsPath, request.getTerraformVersion());
     }
 
-    /**
-     * Method to get terraform plan.
-     */
+    /** Method to get terraform plan. */
     public TerraformPlan getTerraformPlanFromGitRepo(
             TerraformPlanFromGitRepoRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
         scriptsHelper.prepareDeploymentFilesWithGitRepo(
                 taskWorkspace, request.getGitRepoDetails(), null);
-        String scriptsPath = getScriptsLocationInTaskWorkspace(
-                request.getGitRepoDetails(), taskWorkspace);
+        String scriptsPath =
+                getScriptsLocationInTaskWorkspace(request.getGitRepoDetails(), taskWorkspace);
         return directoryService.getTerraformPlanFromDirectory(request, scriptsPath);
     }
 
-    /**
-     * Method of deployment a service using a script.
-     */
+    /** Method of deployment a service using a script. */
     public TerraformResult deployFromGitRepo(TerraformDeployFromGitRepoRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
-        List<File> scriptFiles = scriptsHelper.prepareDeploymentFilesWithGitRepo(
-                taskWorkspace, request.getGitRepoDetails(), null);
-        String scriptsPath = getScriptsLocationInTaskWorkspace(
-                request.getGitRepoDetails(), taskWorkspace);
+        List<File> scriptFiles =
+                scriptsHelper.prepareDeploymentFilesWithGitRepo(
+                        taskWorkspace, request.getGitRepoDetails(), null);
+        String scriptsPath =
+                getScriptsLocationInTaskWorkspace(request.getGitRepoDetails(), taskWorkspace);
         TerraformResult result =
                 directoryService.deployFromDirectory(request, scriptsPath, scriptFiles);
         scriptsHelper.deleteTaskWorkspace(taskWorkspace);
         return result;
     }
 
-    /**
-     * Method of modify a service using a script.
-     */
+    /** Method of modify a service using a script. */
     public TerraformResult modifyFromGitRepo(TerraformModifyFromGitRepoRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
-        List<File> scriptFiles = scriptsHelper.prepareDeploymentFilesWithGitRepo(
-                taskWorkspace, request.getGitRepoDetails(), request.getTfState());
-        String scriptsPath = getScriptsLocationInTaskWorkspace(
-                request.getGitRepoDetails(), taskWorkspace);
+        List<File> scriptFiles =
+                scriptsHelper.prepareDeploymentFilesWithGitRepo(
+                        taskWorkspace, request.getGitRepoDetails(), request.getTfState());
+        String scriptsPath =
+                getScriptsLocationInTaskWorkspace(request.getGitRepoDetails(), taskWorkspace);
         TerraformResult result =
                 directoryService.modifyFromDirectory(request, scriptsPath, scriptFiles);
         scriptsHelper.deleteTaskWorkspace(taskWorkspace);
         return result;
     }
 
-    /**
-     * Method of destroy a service using a script.
-     */
+    /** Method of destroy a service using a script. */
     public TerraformResult destroyFromGitRepo(
             TerraformDestroyFromGitRepoRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
-        List<File> scriptFiles = scriptsHelper.prepareDeploymentFilesWithGitRepo(
-                taskWorkspace, request.getGitRepoDetails(), request.getTfState());
-        String scriptsPath = getScriptsLocationInTaskWorkspace(
-                request.getGitRepoDetails(), taskWorkspace);
+        List<File> scriptFiles =
+                scriptsHelper.prepareDeploymentFilesWithGitRepo(
+                        taskWorkspace, request.getGitRepoDetails(), request.getTfState());
+        String scriptsPath =
+                getScriptsLocationInTaskWorkspace(request.getGitRepoDetails(), taskWorkspace);
         TerraformResult result =
                 directoryService.destroyFromDirectory(request, scriptsPath, scriptFiles);
         scriptsHelper.deleteTaskWorkspace(taskWorkspace);
         return result;
     }
 
-    /**
-     * Async deploy a source by terraform.
-     */
+    /** Async deploy a source by terraform. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncDeployFromGitRepo(TerraformAsyncDeployFromGitRepoRequest asyncDeployRequest,
-                                       UUID uuid) {
+    public void asyncDeployFromGitRepo(
+            TerraformAsyncDeployFromGitRepoRequest asyncDeployRequest, UUID uuid) {
         TerraformResult result;
         try {
             result = deployFromGitRepo(asyncDeployRequest, uuid);
         } catch (RuntimeException e) {
-            result = TerraformResult.builder()
-                    .commandStdOutput(null)
-                    .commandStdError(e.getMessage())
-                    .isCommandSuccessful(false)
-                    .terraformState(null)
-                    .generatedFileContentMap(new HashMap<>())
-                    .build();
+            result =
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(asyncDeployRequest.getRequestId());
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
@@ -141,23 +127,22 @@ public class TerraformGitRepoService {
         sendTerraformResult(url, result);
     }
 
-    /**
-     * Async modify a source by terraform.
-     */
+    /** Async modify a source by terraform. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncModifyFromGitRepo(TerraformAsyncModifyFromGitRepoRequest asyncModifyRequest,
-                                       UUID uuid) {
+    public void asyncModifyFromGitRepo(
+            TerraformAsyncModifyFromGitRepoRequest asyncModifyRequest, UUID uuid) {
         TerraformResult result;
         try {
             result = modifyFromGitRepo(asyncModifyRequest, uuid);
         } catch (RuntimeException e) {
-            result = TerraformResult.builder()
-                    .commandStdOutput(null)
-                    .commandStdError(e.getMessage())
-                    .isCommandSuccessful(false)
-                    .terraformState(null)
-                    .generatedFileContentMap(new HashMap<>())
-                    .build();
+            result =
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(asyncModifyRequest.getRequestId());
         String url = asyncModifyRequest.getWebhookConfig().getUrl();
@@ -165,24 +150,22 @@ public class TerraformGitRepoService {
         sendTerraformResult(url, result);
     }
 
-
-    /**
-     * Async destroy resource of the service.
-     */
+    /** Async destroy resource of the service. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncDestroyFromGitRepo(TerraformAsyncDestroyFromGitRepoRequest request,
-                                        UUID uuid) {
+    public void asyncDestroyFromGitRepo(
+            TerraformAsyncDestroyFromGitRepoRequest request, UUID uuid) {
         TerraformResult result;
         try {
             result = destroyFromGitRepo(request, uuid);
         } catch (RuntimeException e) {
-            result = TerraformResult.builder()
-                    .commandStdOutput(null)
-                    .commandStdError(e.getMessage())
-                    .isCommandSuccessful(false)
-                    .terraformState(null)
-                    .generatedFileContentMap(new HashMap<>())
-                    .build();
+            result =
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(request.getRequestId());
         String url = request.getWebhookConfig().getUrl();
@@ -205,5 +188,4 @@ public class TerraformGitRepoService {
         }
         return taskWorkSpace;
     }
-
 }

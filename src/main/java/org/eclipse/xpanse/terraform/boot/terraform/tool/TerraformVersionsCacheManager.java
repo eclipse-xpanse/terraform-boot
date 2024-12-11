@@ -5,7 +5,6 @@
 
 package org.eclipse.xpanse.terraform.boot.terraform.tool;
 
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Resource;
 import java.util.Objects;
@@ -17,27 +16,21 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-/**
- * Bean to update the cache of versions of Terraform.
- */
+/** Bean to update the cache of versions of Terraform. */
 @Slf4j
 @Component
 public class TerraformVersionsCacheManager implements ApplicationListener<ApplicationStartedEvent> {
 
-    @Resource
-    private TerraformVersionsCache versionsCache;
+    @Resource private TerraformVersionsCache versionsCache;
 
-    @Resource
-    private TerraformVersionsFetcher versionsFetcher;
+    @Resource private TerraformVersionsFetcher versionsFetcher;
 
     @Override
     public void onApplicationEvent(@Nonnull ApplicationStartedEvent event) {
         initializeCache();
     }
 
-    /**
-     * Initialize the cache of available versions of Terraform.
-     */
+    /** Initialize the cache of available versions of Terraform. */
     private void initializeCache() {
         log.info("Initializing Terraform versions cache.");
         Set<String> versions = versionsCache.getAvailableVersions();
@@ -45,8 +38,8 @@ public class TerraformVersionsCacheManager implements ApplicationListener<Applic
     }
 
     /**
-     * Update the cache with the versions fetched from the Terraform website.
-     * This method is scheduled run once a day.
+     * Update the cache with the versions fetched from the Terraform website. This method is
+     * scheduled run once a day.
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void fetchVersionsFromWebsiteAndLoadCache() {
@@ -54,18 +47,19 @@ public class TerraformVersionsCacheManager implements ApplicationListener<Applic
             Set<String> availableVersionsFromWebsite =
                     versionsFetcher.fetchAvailableVersionsFromTerraformWebsite();
             versionsCache.updateCachedVersions(availableVersionsFromWebsite);
-            log.info("Updated the cache with versions:{} fetched from Terraform website.",
+            log.info(
+                    "Updated the cache with versions:{} fetched from Terraform website.",
                     availableVersionsFromWebsite);
         } catch (Exception e) {
-            log.error("Failed to update the cache with versions fetched from Terraform website.",
-                    e);
+            log.error(
+                    "Failed to update the cache with versions fetched from Terraform website.", e);
         }
     }
 
     /**
-     * Update the cache when the default versions cached.
-     * This method is scheduled to run every one hour.
-     * But does nothing if the cache already contains versions other than the default version list.
+     * Update the cache when the default versions cached. This method is scheduled to run every one
+     * hour. But does nothing if the cache already contains versions other than the default version
+     * list.
      */
     @Scheduled(cron = "0 1 * * * ?")
     public void fetchVersionsFromWebsiteAndLoadCacheIfCacheHasOnlyDefaultVersions() {

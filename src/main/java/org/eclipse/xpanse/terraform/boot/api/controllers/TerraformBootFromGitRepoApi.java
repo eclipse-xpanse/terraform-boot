@@ -35,9 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * REST controller for running terraform modules from a GIT repo.
- */
+/** REST controller for running terraform modules from a GIT repo. */
 @Slf4j
 @CrossOrigin
 @RestController
@@ -55,16 +53,19 @@ public class TerraformBootFromGitRepoApi {
      *
      * @return Returns the status of the deployment.
      */
-    @Tag(name = "TerraformFromGitRepo", description =
-            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    @Tag(
+            name = "TerraformFromGitRepo",
+            description =
+                    "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
     @Operation(description = "Deploy resources via Terraform")
-    @PostMapping(value = "/validate", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformValidationResult validateScriptsFromGitRepo(
             @Valid @RequestBody TerraformDeployFromGitRepoRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         return terraformGitRepoService.validateWithScripts(request);
@@ -75,16 +76,21 @@ public class TerraformBootFromGitRepoApi {
      *
      * @return Returns the terraform plan as a JSON string.
      */
-    @Tag(name = "TerraformFromGitRepo", description =
-            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
-    @Operation(description =
-            "Get Terraform Plan as JSON string from the list of script files provided")
+    @Tag(
+            name = "TerraformFromGitRepo",
+            description =
+                    "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    @Operation(
+            description =
+                    "Get Terraform Plan as JSON string from the list of script files provided")
     @PostMapping(value = "/plan", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformPlan planFromGitRepo(
             @Valid @RequestBody TerraformPlanFromGitRepoRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         return terraformGitRepoService.getTerraformPlanFromGitRepo(request, uuid);
@@ -95,16 +101,19 @@ public class TerraformBootFromGitRepoApi {
      *
      * @return Returns the status of the deployment.
      */
-    @Tag(name = "TerraformFromGitRepo", description =
-            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    @Tag(
+            name = "TerraformFromGitRepo",
+            description =
+                    "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
     @Operation(description = "Deploy resources via Terraform")
-    @PostMapping(value = "/deploy", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/deploy", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult deployFromGitRepo(
             @Valid @RequestBody TerraformDeployFromGitRepoRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         return terraformGitRepoService.deployFromGitRepo(request, uuid);
@@ -115,16 +124,19 @@ public class TerraformBootFromGitRepoApi {
      *
      * @return Returns the status of the deployment.
      */
-    @Tag(name = "TerraformFromGitRepo", description =
-            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    @Tag(
+            name = "TerraformFromGitRepo",
+            description =
+                    "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
     @Operation(description = "Modify resources via Terraform")
-    @PostMapping(value = "/modify", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/modify", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult modifyFromGitRepo(
             @Valid @RequestBody TerraformModifyFromGitRepoRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         return terraformGitRepoService.modifyFromGitRepo(request, uuid);
@@ -135,70 +147,76 @@ public class TerraformBootFromGitRepoApi {
      *
      * @return Returns the status of to Destroy.
      */
-    @Tag(name = "TerraformFromGitRepo", description =
-            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    @Tag(
+            name = "TerraformFromGitRepo",
+            description =
+                    "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
     @Operation(description = "Destroy resources via Terraform")
-    @PostMapping(value = "/destroy", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/destroy", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformResult destroyFromGitRepo(
             @Valid @RequestBody TerraformDestroyFromGitRepoRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         return terraformGitRepoService.destroyFromGitRepo(request, uuid);
     }
 
-    /**
-     * Method to async deploy resources from the provided GIT Repo.
-     */
-    @Tag(name = "TerraformFromGitRepo", description =
-            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    /** Method to async deploy resources from the provided GIT Repo. */
+    @Tag(
+            name = "TerraformFromGitRepo",
+            description =
+                    "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
     @Operation(description = "async deploy resources via Terraform")
-    @PostMapping(value = "/deploy/async", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/deploy/async", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncDeployFromGitRepo(
             @Valid @RequestBody TerraformAsyncDeployFromGitRepoRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         terraformGitRepoService.asyncDeployFromGitRepo(request, uuid);
     }
 
-    /**
-     * Method to async modify resources from the provided GIT Repo.
-     */
-    @Tag(name = "TerraformFromGitRepo", description =
-            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    /** Method to async modify resources from the provided GIT Repo. */
+    @Tag(
+            name = "TerraformFromGitRepo",
+            description =
+                    "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
     @Operation(description = "async deploy resources via Terraform")
-    @PostMapping(value = "/modify/async", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/modify/async", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncModifyFromGitRepo(
             @Valid @RequestBody TerraformAsyncModifyFromGitRepoRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         terraformGitRepoService.asyncModifyFromGitRepo(request, uuid);
     }
 
-    /**
-     * Method to async destroy resources by scripts.
-     */
-    @Tag(name = "TerraformFromGitRepo", description =
-            "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
+    /** Method to async destroy resources by scripts. */
+    @Tag(
+            name = "TerraformFromGitRepo",
+            description =
+                    "APIs for running Terraform commands using Terraform scripts from a GIT Repo.")
     @Operation(description = "Async destroy the Terraform modules")
-    @DeleteMapping(value = "/destroy/async",
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/destroy/async", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void asyncDestroyFromGitRepo(
             @Valid @RequestBody TerraformAsyncDestroyFromGitRepoRequest request) {
-        UUID uuid = Objects.nonNull(request.getRequestId())
-                ? request.getRequestId() : UUID.randomUUID();
+        UUID uuid =
+                Objects.nonNull(request.getRequestId())
+                        ? request.getRequestId()
+                        : UUID.randomUUID();
         MDC.put(REQUEST_ID, uuid.toString());
         request.setRequestId(uuid);
         terraformGitRepoService.asyncDestroyFromGitRepo(request, uuid);

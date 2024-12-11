@@ -14,9 +14,7 @@ import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Caffeine cache configuration class.
- */
+/** Caffeine cache configuration class. */
 @Slf4j
 @Configuration
 public class CaffeineCacheConfig {
@@ -31,14 +29,12 @@ public class CaffeineCacheConfig {
     @Bean
     public CacheManager caffeineCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        cacheManager.registerCustomCache(TERRAFORM_VERSIONS_CACHE_NAME,
-                getTerraformVersionsCache());
+        cacheManager.registerCustomCache(
+                TERRAFORM_VERSIONS_CACHE_NAME, getTerraformVersionsCache());
         return cacheManager;
     }
-
 
     private Cache<Object, Object> getTerraformVersionsCache() {
         return Caffeine.newBuilder().build();
     }
-
 }

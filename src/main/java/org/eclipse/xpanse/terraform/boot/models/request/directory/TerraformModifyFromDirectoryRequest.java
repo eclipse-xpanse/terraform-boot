@@ -17,9 +17,7 @@ import java.util.UUID;
 import lombok.Data;
 import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 
-/**
- * Data model for the terraform modify requests.
- */
+/** Data model for the terraform modify requests. */
 @Data
 public class TerraformModifyFromDirectoryRequest {
 
@@ -33,16 +31,24 @@ public class TerraformModifyFromDirectoryRequest {
     private String terraformVersion;
 
     @NotNull
-    @Schema(description = "Flag to control if the deployment must only generate the terraform "
-            + "or it must also apply the changes.")
+    @Schema(
+            description =
+                    "Flag to control if the deployment must only generate the terraform "
+                            + "or it must also apply the changes.")
     private Boolean isPlanOnly;
 
     @NotNull
-    @Schema(description = "Key-value pairs of regular variables that must be used to execute the "
-            + "Terraform request.", additionalProperties = TRUE)
+    @Schema(
+            description =
+                    "Key-value pairs of regular variables that must be used to execute the "
+                            + "Terraform request.",
+            additionalProperties = TRUE)
     private Map<String, Object> variables;
 
-    @Schema(description = "Key-value pairs of variables that must be injected as environment "
-            + "variables to terraform process.", additionalProperties = TRUE)
+    @Schema(
+            description =
+                    "Key-value pairs of variables that must be injected as environment "
+                            + "variables to terraform process.",
+            additionalProperties = TRUE)
     private Map<String, String> envVariables = new HashMap<>();
 }

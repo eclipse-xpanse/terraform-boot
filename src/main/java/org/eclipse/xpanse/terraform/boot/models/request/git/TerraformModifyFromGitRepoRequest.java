@@ -11,9 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModifyFromDirectoryRequest;
 
-/**
- * Data model for terraform modify requests using scripts from a GIT Repo.
- */
+/** Data model for terraform modify requests using scripts from a GIT Repo. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformModifyFromGitRepoRequest extends TerraformModifyFromDirectoryRequest {

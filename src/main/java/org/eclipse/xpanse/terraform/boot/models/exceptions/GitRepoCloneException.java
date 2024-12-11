@@ -5,9 +5,7 @@
 
 package org.eclipse.xpanse.terraform.boot.models.exceptions;
 
-/**
- * Exception thrown when GIT clone command fails.
- */
+/** Exception thrown when GIT clone command fails. */
 public class GitRepoCloneException extends RuntimeException {
 
     public GitRepoCloneException(String message) {

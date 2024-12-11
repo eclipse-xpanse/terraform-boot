@@ -18,34 +18,32 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-
-/**
- * Configuration springdoc security OAuth2.
- */
+/** Configuration springdoc security OAuth2. */
 @Profile("oauth")
 @OpenAPIDefinition(
-        info = @Info(
-                title = "Terraform-Boot API",
-                description = "RESTful Services to interact with Terraform-Boot runtime",
-                version = "${app.version}"
-        ),
-        security = @SecurityRequirement(name = "OAuth2Flow",
-                scopes = {OPENID_SCOPE})
-)
+        info =
+                @Info(
+                        title = "Terraform-Boot API",
+                        description = "RESTful Services to interact with Terraform-Boot runtime",
+                        version = "${app.version}"),
+        security =
+                @SecurityRequirement(
+                        name = "OAuth2Flow",
+                        scopes = {OPENID_SCOPE}))
 @SecurityScheme(
         name = "OAuth2Flow",
         type = SecuritySchemeType.OAUTH2,
-        flows = @OAuthFlows(authorizationCode =
-        @OAuthFlow(
-                authorizationUrl = "${springdoc.oAuthFlow.authorizationUrl}",
-                tokenUrl = "${springdoc.oAuthFlow.tokenUrl}",
-                scopes = {
-                        @OAuthScope(name = OPENID_SCOPE,
-                                description = "mandatory must be selected.")
-                }
-        )
-        )
-)
+        flows =
+                @OAuthFlows(
+                        authorizationCode =
+                                @OAuthFlow(
+                                        authorizationUrl =
+                                                "${springdoc.oAuthFlow.authorizationUrl}",
+                                        tokenUrl = "${springdoc.oAuthFlow.tokenUrl}",
+                                        scopes = {
+                                            @OAuthScope(
+                                                    name = OPENID_SCOPE,
+                                                    description = "mandatory must be selected.")
+                                        })))
 @Configuration
-public class Oauth2OpenApiConfig {
-}
+public class Oauth2OpenApiConfig {}

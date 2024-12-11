@@ -23,5 +23,7 @@ jobs:
         with:
           java-version: 21
           distribution: 'temurin'
-      - name: Build
+      - name: Format check
+        run: mvn spotless:check &&  mvn checkstyle:check
+      - name: Build & Test
         run: mvn --batch-mode --update-snapshots --no-transfer-progress verify

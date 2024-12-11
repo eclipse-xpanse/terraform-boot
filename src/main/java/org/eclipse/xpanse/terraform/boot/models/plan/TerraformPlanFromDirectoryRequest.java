@@ -15,9 +15,7 @@ import java.util.UUID;
 import lombok.Data;
 import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 
-/**
- * Data model for the generating terraform plan.
- */
+/** Data model for the generating terraform plan. */
 @Data
 public class TerraformPlanFromDirectoryRequest {
 
@@ -31,13 +29,17 @@ public class TerraformPlanFromDirectoryRequest {
     private String terraformVersion;
 
     @NotNull
-    @Schema(description = "Key-value pairs of variables that must be used to execute the "
-            + "Terraform request.",
+    @Schema(
+            description =
+                    "Key-value pairs of variables that must be used to execute the "
+                            + "Terraform request.",
             additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
     private Map<String, Object> variables;
 
-    @Schema(description = "Key-value pairs of variables that must be injected as environment "
-            + "variables to terraform process.",
+    @Schema(
+            description =
+                    "Key-value pairs of variables that must be injected as environment "
+                            + "variables to terraform process.",
             additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
     private Map<String, String> envVariables = new HashMap<>();
 }

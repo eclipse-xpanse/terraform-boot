@@ -38,29 +38,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-/**
- * Terraform service classes are deployed form Directory.
- */
+/** Terraform service classes are deployed form Directory. */
 @Slf4j
 @Service
 public class TerraformDirectoryService {
-    private static final String HELLO_WORLD_TEMPLATE = """
+    private static final String HELLO_WORLD_TEMPLATE =
+            """
             output "hello_world" {
                 value = "Hello, World!"
             }
             """;
-    @Resource
-    private TerraformExecutor executor;
-    @Resource
-    private TerraformInstaller installer;
-    @Resource
-    private RestTemplate restTemplate;
-    @Resource
-    private TerraformVersionsHelper versionHelper;
-    @Resource
-    private TerraformScriptsHelper scriptsHelper;
-    @Resource
-    private TerraformResultPersistenceManage terraformResultPersistenceManage;
+    @Resource private TerraformExecutor executor;
+    @Resource private TerraformInstaller installer;
+    @Resource private RestTemplate restTemplate;
+    @Resource private TerraformVersionsHelper versionHelper;
+    @Resource private TerraformScriptsHelper scriptsHelper;
+    @Resource private TerraformResultPersistenceManage terraformResultPersistenceManage;
 
     /**
      * Perform Terraform health checks by creating a Terraform test configuration file.
@@ -69,8 +62,8 @@ public class TerraformDirectoryService {
      */
     public TerraformBootSystemStatus tfHealthCheck() {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(UUID.randomUUID().toString());
-        scriptsHelper.prepareDeploymentFilesWithScripts(taskWorkspace,
-                List.of(HELLO_WORLD_TEMPLATE), null);
+        scriptsHelper.prepareDeploymentFilesWithScripts(
+                taskWorkspace, List.of(HELLO_WORLD_TEMPLATE), null);
         TerraformValidationResult terraformValidationResult =
                 tfValidateFromDirectory(taskWorkspace, null);
         TerraformBootSystemStatus systemStatus = new TerraformBootSystemStatus();
@@ -88,15 +81,16 @@ public class TerraformDirectoryService {
      *
      * @return TfValidationResult.
      */
-    public TerraformValidationResult tfValidateFromDirectory(String taskWorkspace,
-                                                             String terraformVersion) {
+    public TerraformValidationResult tfValidateFromDirectory(
+            String taskWorkspace, String terraformVersion) {
         try {
             String executorPath =
                     installer.getExecutorPathThatMatchesRequiredVersion(terraformVersion);
             SystemCmdResult result = executor.tfValidate(executorPath, taskWorkspace);
             TerraformValidationResult validationResult =
-                    new ObjectMapper().readValue(result.getCommandStdOutput(),
-                            TerraformValidationResult.class);
+                    new ObjectMapper()
+                            .readValue(
+                                    result.getCommandStdOutput(), TerraformValidationResult.class);
             validationResult.setTerraformVersionUsed(
                     versionHelper.getExactVersionOfExecutor(executorPath));
             return validationResult;
@@ -105,22 +99,31 @@ public class TerraformDirectoryService {
         }
     }
 
-    /**
-     * Deploy a source by terraform.
-     */
-    public TerraformResult deployFromDirectory(TerraformDeployFromDirectoryRequest request,
-                                               String taskWorkspace, List<File> scriptFiles) {
+    /** Deploy a source by terraform. */
+    public TerraformResult deployFromDirectory(
+            TerraformDeployFromDirectoryRequest request,
+            String taskWorkspace,
+            List<File> scriptFiles) {
         SystemCmdResult result;
         String executorPath = null;
         try {
-            executorPath = installer.getExecutorPathThatMatchesRequiredVersion(
-                    request.getTerraformVersion());
+            executorPath =
+                    installer.getExecutorPathThatMatchesRequiredVersion(
+                            request.getTerraformVersion());
             if (Boolean.TRUE.equals(request.getIsPlanOnly())) {
-                result = executor.tfPlan(executorPath, request.getVariables(),
-                        request.getEnvVariables(), taskWorkspace);
+                result =
+                        executor.tfPlan(
+                                executorPath,
+                                request.getVariables(),
+                                request.getEnvVariables(),
+                                taskWorkspace);
             } else {
-                result = executor.tfApply(executorPath, request.getVariables(),
-                        request.getEnvVariables(), taskWorkspace);
+                result =
+                        executor.tfApply(
+                                executorPath,
+                                request.getVariables(),
+                                request.getEnvVariables(),
+                                taskWorkspace);
             }
         } catch (InvalidTerraformToolException | TerraformExecutorException tfEx) {
             log.error("Terraform deploy service failed. error:{}", tfEx.getMessage());
@@ -136,22 +139,31 @@ public class TerraformDirectoryService {
         return terraformResult;
     }
 
-    /**
-     * Modify a source by terraform.
-     */
-    public TerraformResult modifyFromDirectory(TerraformModifyFromDirectoryRequest request,
-                                               String taskWorkspace, List<File> scriptFiles) {
+    /** Modify a source by terraform. */
+    public TerraformResult modifyFromDirectory(
+            TerraformModifyFromDirectoryRequest request,
+            String taskWorkspace,
+            List<File> scriptFiles) {
         SystemCmdResult result;
         String executorPath = null;
         try {
-            executorPath = installer.getExecutorPathThatMatchesRequiredVersion(
-                    request.getTerraformVersion());
+            executorPath =
+                    installer.getExecutorPathThatMatchesRequiredVersion(
+                            request.getTerraformVersion());
             if (Boolean.TRUE.equals(request.getIsPlanOnly())) {
-                result = executor.tfPlan(executorPath, request.getVariables(),
-                        request.getEnvVariables(), taskWorkspace);
+                result =
+                        executor.tfPlan(
+                                executorPath,
+                                request.getVariables(),
+                                request.getEnvVariables(),
+                                taskWorkspace);
             } else {
-                result = executor.tfApply(executorPath, request.getVariables(),
-                        request.getEnvVariables(), taskWorkspace);
+                result =
+                        executor.tfApply(
+                                executorPath,
+                                request.getVariables(),
+                                request.getEnvVariables(),
+                                taskWorkspace);
             }
         } catch (InvalidTerraformToolException | TerraformExecutorException tfEx) {
             log.error("Terraform deploy service failed. error:{}", tfEx.getMessage());
@@ -168,18 +180,23 @@ public class TerraformDirectoryService {
         return terraformResult;
     }
 
-    /**
-     * Destroy resource of the service.
-     */
-    public TerraformResult destroyFromDirectory(TerraformDestroyFromDirectoryRequest request,
-                                                String taskWorkspace, List<File> scriptFiles) {
+    /** Destroy resource of the service. */
+    public TerraformResult destroyFromDirectory(
+            TerraformDestroyFromDirectoryRequest request,
+            String taskWorkspace,
+            List<File> scriptFiles) {
         SystemCmdResult result;
         String executorPath = null;
         try {
-            executorPath = installer.getExecutorPathThatMatchesRequiredVersion(
-                    request.getTerraformVersion());
-            result = executor.tfDestroy(executorPath, request.getVariables(),
-                    request.getEnvVariables(), taskWorkspace);
+            executorPath =
+                    installer.getExecutorPathThatMatchesRequiredVersion(
+                            request.getTerraformVersion());
+            result =
+                    executor.tfDestroy(
+                            executorPath,
+                            request.getVariables(),
+                            request.getEnvVariables(),
+                            taskWorkspace);
         } catch (InvalidTerraformToolException | TerraformExecutorException tfEx) {
             log.error("Terraform destroy service failed. error:{}", tfEx.getMessage());
             result = new SystemCmdResult();
@@ -195,15 +212,17 @@ public class TerraformDirectoryService {
         return terraformResult;
     }
 
-    /**
-     * Executes terraform plan command on a directory and returns the plan as a JSON string.
-     */
-    public TerraformPlan getTerraformPlanFromDirectory(TerraformPlanFromDirectoryRequest request,
-                                                       String taskWorkspace) {
+    /** Executes terraform plan command on a directory and returns the plan as a JSON string. */
+    public TerraformPlan getTerraformPlanFromDirectory(
+            TerraformPlanFromDirectoryRequest request, String taskWorkspace) {
         String executorPath =
                 installer.getExecutorPathThatMatchesRequiredVersion(request.getTerraformVersion());
-        String result = executor.getTerraformPlanAsJson(executorPath, request.getVariables(),
-                request.getEnvVariables(), taskWorkspace);
+        String result =
+                executor.getTerraformPlanAsJson(
+                        executorPath,
+                        request.getVariables(),
+                        request.getEnvVariables(),
+                        taskWorkspace);
         scriptsHelper.deleteTaskWorkspace(taskWorkspace);
         TerraformPlan terraformPlan = TerraformPlan.builder().plan(result).build();
         terraformPlan.setTerraformVersionUsed(
@@ -211,20 +230,24 @@ public class TerraformDirectoryService {
         return terraformPlan;
     }
 
-    /**
-     * Async deploy a source by terraform.
-     */
+    /** Async deploy a source by terraform. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncDeployWithScripts(TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest,
-                                       String taskWorkspace, List<File> scriptFiles) {
+    public void asyncDeployWithScripts(
+            TerraformAsyncDeployFromDirectoryRequest asyncDeployRequest,
+            String taskWorkspace,
+            List<File> scriptFiles) {
         TerraformResult result;
         try {
             result = deployFromDirectory(asyncDeployRequest, taskWorkspace, scriptFiles);
         } catch (RuntimeException e) {
             result =
-                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
-                            .isCommandSuccessful(false).terraformState(null)
-                            .generatedFileContentMap(new HashMap<>()).build();
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(asyncDeployRequest.getRequestId());
         String url = asyncDeployRequest.getWebhookConfig().getUrl();
@@ -232,20 +255,24 @@ public class TerraformDirectoryService {
         sendTerraformResult(url, result);
     }
 
-    /**
-     * Async modify a source by terraform.
-     */
+    /** Async modify a source by terraform. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncModifyWithScripts(TerraformAsyncModifyFromDirectoryRequest asyncModifyRequest,
-                                       String taskWorkspace, List<File> scriptFiles) {
+    public void asyncModifyWithScripts(
+            TerraformAsyncModifyFromDirectoryRequest asyncModifyRequest,
+            String taskWorkspace,
+            List<File> scriptFiles) {
         TerraformResult result;
         try {
             result = modifyFromDirectory(asyncModifyRequest, taskWorkspace, scriptFiles);
         } catch (RuntimeException e) {
             result =
-                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
-                            .isCommandSuccessful(false).terraformState(null)
-                            .generatedFileContentMap(new HashMap<>()).build();
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(asyncModifyRequest.getRequestId());
         String url = asyncModifyRequest.getWebhookConfig().getUrl();
@@ -253,20 +280,24 @@ public class TerraformDirectoryService {
         sendTerraformResult(url, result);
     }
 
-    /**
-     * Async destroy resource of the service.
-     */
+    /** Async destroy resource of the service. */
     @Async(TaskConfiguration.TASK_EXECUTOR_NAME)
-    public void asyncDestroyWithScripts(TerraformAsyncDestroyFromDirectoryRequest request,
-                                        String taskWorkspace, List<File> scriptFiles) {
+    public void asyncDestroyWithScripts(
+            TerraformAsyncDestroyFromDirectoryRequest request,
+            String taskWorkspace,
+            List<File> scriptFiles) {
         TerraformResult result;
         try {
             result = destroyFromDirectory(request, taskWorkspace, scriptFiles);
         } catch (RuntimeException e) {
             result =
-                    TerraformResult.builder().commandStdOutput(null).commandStdError(e.getMessage())
-                            .isCommandSuccessful(false).terraformState(null)
-                            .generatedFileContentMap(new HashMap<>()).build();
+                    TerraformResult.builder()
+                            .commandStdOutput(null)
+                            .commandStdError(e.getMessage())
+                            .isCommandSuccessful(false)
+                            .terraformState(null)
+                            .generatedFileContentMap(new HashMap<>())
+                            .build();
         }
         result.setRequestId(request.getRequestId());
         String url = request.getWebhookConfig().getUrl();

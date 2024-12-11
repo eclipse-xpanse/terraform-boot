@@ -10,9 +10,7 @@ import org.eclipse.serializer.SerializerFoundation;
 import org.eclipse.xpanse.terraform.boot.models.response.TerraformResult;
 import org.springframework.stereotype.Component;
 
-/**
- * class to manage TerraformResult serialization and deserialization using eclipse-serializer.
- */
+/** class to manage TerraformResult serialization and deserialization using eclipse-serializer. */
 @Component
 public class TerraformResultSerializer {
 
@@ -23,8 +21,8 @@ public class TerraformResultSerializer {
      * @return byte[].
      */
     public byte[] serialize(TerraformResult result) {
-        final SerializerFoundation<?> foundation = SerializerFoundation
-                .New().registerEntityTypes(TerraformResult.class);
+        final SerializerFoundation<?> foundation =
+                SerializerFoundation.New().registerEntityTypes(TerraformResult.class);
         Serializer<byte[]> serializer = Serializer.Bytes(foundation);
         return serializer.serialize(result);
     }
@@ -36,10 +34,9 @@ public class TerraformResultSerializer {
      * @return TerraformResult.
      */
     public TerraformResult deserialize(byte[] data) {
-        final SerializerFoundation<?> foundation = SerializerFoundation
-                .New().registerEntityTypes(TerraformResult.class);
+        final SerializerFoundation<?> foundation =
+                SerializerFoundation.New().registerEntityTypes(TerraformResult.class);
         Serializer<byte[]> serializer = Serializer.Bytes(foundation);
         return serializer.deserialize(data);
     }
-
 }

@@ -13,9 +13,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformModifyFromDirectoryRequest;
 
-/**
- * Terraform uses the request object modify by the script.
- */
+/** Terraform uses the request object modify by the script. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformModifyWithScriptsRequest extends TerraformModifyFromDirectoryRequest {

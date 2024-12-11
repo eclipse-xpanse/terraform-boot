@@ -22,52 +22,40 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-/**
- * Exception handler for exceptions thrown by the methods called by the API controller.
- */
+/** Exception handler for exceptions thrown by the methods called by the API controller. */
 @Slf4j
 @RestControllerAdvice
 public class TerraformApiExceptionHandler {
 
-    /**
-     * Exception handler for TerraformExecutorException.
-     */
+    /** Exception handler for TerraformExecutorException. */
     @ExceptionHandler({TerraformExecutorException.class})
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     @ResponseBody
-    public Response handleTerraformExecutorException(
-            TerraformExecutorException ex) {
-        return Response.errorResponse(ResultType.TERRAFORM_EXECUTION_FAILED,
-                Collections.singletonList(ex.getMessage()));
+    public Response handleTerraformExecutorException(TerraformExecutorException ex) {
+        return Response.errorResponse(
+                ResultType.TERRAFORM_EXECUTION_FAILED, Collections.singletonList(ex.getMessage()));
     }
 
-    /**
-     * Exception handler for UnsupportedEnumValueException.
-     */
+    /** Exception handler for UnsupportedEnumValueException. */
     @ExceptionHandler({UnsupportedEnumValueException.class})
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ResponseBody
-    public Response handleUnsupportedEnumValueException(
-            UnsupportedEnumValueException ex) {
-        return Response.errorResponse(ResultType.UNSUPPORTED_ENUM_VALUE,
-                Collections.singletonList(ex.getMessage()));
+    public Response handleUnsupportedEnumValueException(UnsupportedEnumValueException ex) {
+        return Response.errorResponse(
+                ResultType.UNSUPPORTED_ENUM_VALUE, Collections.singletonList(ex.getMessage()));
     }
 
-    /**
-     * Exception handler for MethodArgumentTypeMismatchException.
-     */
+    /** Exception handler for MethodArgumentTypeMismatchException. */
     @ExceptionHandler({MethodArgumentTypeMismatchException.class})
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ResponseBody
     public Response handleMethodArgumentTypeMismatchException(
             MethodArgumentTypeMismatchException ex) {
-        return Response.errorResponse(ResultType.UNPROCESSABLE_ENTITY,
-                Collections.singletonList(ex.getMessage()));
+        return Response.errorResponse(
+                ResultType.UNPROCESSABLE_ENTITY, Collections.singletonList(ex.getMessage()));
     }
 
-    /**
-     * Exception handler for MethodArgumentNotValidException.
-     */
+    /** Exception handler for MethodArgumentNotValidException. */
     @ExceptionHandler({MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ResponseBody
@@ -81,75 +69,62 @@ public class TerraformApiExceptionHandler {
         return Response.errorResponse(ResultType.UNPROCESSABLE_ENTITY, errors);
     }
 
-    /**
-     * Exception handler for HttpMessageConversionException.
-     */
+    /** Exception handler for HttpMessageConversionException. */
     @ExceptionHandler({HttpMessageConversionException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Response handleHttpMessageConversionException(HttpMessageConversionException ex) {
         log.error("handleHttpMessageConversionException: ", ex);
         String failMessage = ex.getMessage();
-        return Response.errorResponse(ResultType.BAD_PARAMETERS,
-                Collections.singletonList(failMessage));
+        return Response.errorResponse(
+                ResultType.BAD_PARAMETERS, Collections.singletonList(failMessage));
     }
 
-    /**
-     * Exception handler for TerraformHealthCheckException.
-     */
+    /** Exception handler for TerraformHealthCheckException. */
     @ExceptionHandler({TerraformHealthCheckException.class})
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public Response handleTerraformHealthCheckException(TerraformHealthCheckException ex) {
         log.error("TerraformHealthCheckException: ", ex);
         String failMessage = ex.getMessage();
-        return Response.errorResponse(ResultType.SERVICE_UNAVAILABLE,
-                Collections.singletonList(failMessage));
+        return Response.errorResponse(
+                ResultType.SERVICE_UNAVAILABLE, Collections.singletonList(failMessage));
     }
 
-    /**
-     * Exception handler for GitRepoCloneException.
-     */
+    /** Exception handler for GitRepoCloneException. */
     @ExceptionHandler({GitRepoCloneException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Response handleGitRepoCloneException(GitRepoCloneException ex) {
         log.error("GitRepoCloneException: ", ex);
         String failMessage = ex.getMessage();
-        return Response.errorResponse(ResultType.INVALID_GIT_REPO_DETAILS,
-                Collections.singletonList(failMessage));
+        return Response.errorResponse(
+                ResultType.INVALID_GIT_REPO_DETAILS, Collections.singletonList(failMessage));
     }
 
-    /**
-     * Exception handler for InvalidTerraformToolException.
-     */
+    /** Exception handler for InvalidTerraformToolException. */
     @ExceptionHandler({InvalidTerraformToolException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public Response handleInvalidTerraformToolException(
-            InvalidTerraformToolException ex) {
-        return Response.errorResponse(ResultType.INVALID_TERRAFORM_TOOL,
-                Collections.singletonList(ex.getMessage()));
+    public Response handleInvalidTerraformToolException(InvalidTerraformToolException ex) {
+        return Response.errorResponse(
+                ResultType.INVALID_TERRAFORM_TOOL, Collections.singletonList(ex.getMessage()));
     }
 
-    /**
-     * Exception handler for InvalidTerraformScriptsException.
-     */
+    /** Exception handler for InvalidTerraformScriptsException. */
     @ExceptionHandler({InvalidTerraformScriptsException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public Response handleInvalidTerraformScriptsException(
-            InvalidTerraformScriptsException ex) {
-        return Response.errorResponse(ResultType.INVALID_TERRAFORM_SCRIPTS,
-                Collections.singletonList(ex.getMessage()));
+    public Response handleInvalidTerraformScriptsException(InvalidTerraformScriptsException ex) {
+        return Response.errorResponse(
+                ResultType.INVALID_TERRAFORM_SCRIPTS, Collections.singletonList(ex.getMessage()));
     }
 
-    /**
-     * Exception handler for ResultAlreadyReturnedOrRequestIdInvalidException.
-     */
+    /** Exception handler for ResultAlreadyReturnedOrRequestIdInvalidException. */
     @ExceptionHandler({ResultAlreadyReturnedOrRequestIdInvalidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public Response handleResultAlreadyReturnedOrRequestIdInvalidException(
             ResultAlreadyReturnedOrRequestIdInvalidException ex) {
-        return Response.errorResponse(ResultType.RESULT_ALREADY_RETURNED_OR_REQUEST_ID_INVALID,
+        return Response.errorResponse(
+                ResultType.RESULT_ALREADY_RETURNED_OR_REQUEST_ID_INVALID,
                 Collections.singletonList(ex.getMessage()));
     }
 }

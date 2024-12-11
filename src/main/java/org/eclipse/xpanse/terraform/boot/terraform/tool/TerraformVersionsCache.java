@@ -5,7 +5,6 @@
 
 package org.eclipse.xpanse.terraform.boot.terraform.tool;
 
-
 import static org.eclipse.xpanse.terraform.boot.cache.CaffeineCacheConfig.TERRAFORM_VERSIONS_CACHE_NAME;
 
 import jakarta.annotation.Resource;
@@ -15,17 +14,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-/**
- * Bean to update the cache of versions of OpenTofu.
- */
+/** Bean to update the cache of versions of OpenTofu. */
 @Slf4j
 @Component
 public class TerraformVersionsCache {
 
     @Value("${support.default.terraform.versions.only:true}")
     private boolean getDefaultVersionsOnly;
-    @Resource
-    private TerraformVersionsFetcher versionsFetcher;
+
+    @Resource private TerraformVersionsFetcher versionsFetcher;
 
     /**
      * Get the available versions of OpenTofu.
@@ -40,8 +37,8 @@ public class TerraformVersionsCache {
         try {
             return versionsFetcher.fetchAvailableVersionsFromTerraformWebsite();
         } catch (Exception e) {
-            log.error("Failed to fetch versions from Terraform website. Using default versions.",
-                    e);
+            log.error(
+                    "Failed to fetch versions from Terraform website. Using default versions.", e);
             return versionsFetcher.getDefaultVersionsFromConfig();
         }
     }
@@ -55,5 +52,4 @@ public class TerraformVersionsCache {
     public void updateCachedVersions(Set<String> versions) {
         log.info("Updated OpenTofu versions cache with versions:{}.", versions);
     }
-
 }
