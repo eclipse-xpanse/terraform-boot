@@ -11,9 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.webhook.WebhookConfig;
 
-/**
- * Data model for the terraform async deploy requests.
- */
+/** Data model for the terraform async deploy requests. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformAsyncDeployFromGitRepoRequest extends TerraformDeployFromGitRepoRequest {
@@ -21,5 +19,4 @@ public class TerraformAsyncDeployFromGitRepoRequest extends TerraformDeployFromG
     @NotNull
     @Schema(description = "Configuration information of webhook.")
     private WebhookConfig webhookConfig;
-
 }

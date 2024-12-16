@@ -28,9 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-/**
- * bean to host all generic methods shared from different types of Terraform deployers.
- */
+/** bean to host all generic methods shared from different types of Terraform deployers. */
 @Slf4j
 @Component
 public class TerraformScriptsHelper {
@@ -43,11 +41,11 @@ public class TerraformScriptsHelper {
 
     @Value("${terraform.root.module.directory}")
     private String moduleParentDirectoryPath;
+
     @Value("${clean.workspace.after.deployment.enabled:true}")
     private Boolean cleanWorkspaceAfterDeployment;
-    @Resource
-    private ScriptsGitRepoManage scriptsGitRepoManage;
 
+    @Resource private ScriptsGitRepoManage scriptsGitRepoManage;
 
     /**
      * Create workspace for the Terraform deployment task.
@@ -68,7 +66,7 @@ public class TerraformScriptsHelper {
      * Create the tfstate file in the taskWorkspace for the Terraform deployment task.
      *
      * @param taskWorkspace taskWorkspace path for the Terraform deployment task.
-     * @param tfState       state file contents as string.
+     * @param tfState state file contents as string.
      */
     public File createTfStateFile(String taskWorkspace, String tfState) {
         if (StringUtils.isBlank(tfState)) {
@@ -86,17 +84,16 @@ public class TerraformScriptsHelper {
         }
     }
 
-
     /**
      * Prepare deployment files with scripts in the workspace for the Terraform deployment task.
      *
      * @param taskWorkspace workspace path for the Terraform deployment task.
-     * @param scripts       list of script contents as string.
-     * @param tfState       tfState file contents as string.
+     * @param scripts list of script contents as string.
+     * @param tfState tfState file contents as string.
      * @return list of script files.
      */
-    public List<File> prepareDeploymentFilesWithScripts(String taskWorkspace,
-                                                        List<String> scripts, String tfState) {
+    public List<File> prepareDeploymentFilesWithScripts(
+            String taskWorkspace, List<String> scripts, String tfState) {
         File scriptFile = buildScriptFiles(taskWorkspace, scripts);
         List<File> scriptFiles = new ArrayList<>();
         scriptFiles.add(scriptFile);
@@ -107,13 +104,12 @@ public class TerraformScriptsHelper {
         return scriptFiles;
     }
 
-
     /**
      * Prepare deployment files with git repo in the workspace for the Terraform deployment task.
      *
-     * @param taskWorkspace  workspace path for the Terraform deployment task.
+     * @param taskWorkspace workspace path for the Terraform deployment task.
      * @param gitRepoDetails git repo details.
-     * @param tfState        tfState file contents as string.
+     * @param tfState tfState file contents as string.
      * @return list of script files.
      */
     public List<File> prepareDeploymentFilesWithGitRepo(
@@ -128,20 +124,19 @@ public class TerraformScriptsHelper {
         return projectFiles;
     }
 
-
     private File buildScriptFiles(String taskWorkspace, List<String> scripts) {
         log.info("start build terraform script");
         if (CollectionUtils.isEmpty(scripts)) {
-            throw new TerraformExecutorException("terraform scripts create error, terraform "
-                    + "scripts not exists");
+            throw new TerraformExecutorException(
+                    "terraform scripts create error, terraform " + "scripts not exists");
         }
         StringBuilder scriptBuilder = new StringBuilder();
         for (String script : scripts) {
             scriptBuilder.append(script).append(System.lineSeparator());
         }
         if (scriptBuilder.isEmpty()) {
-            throw new TerraformExecutorException("terraform scripts create error, terraform "
-                    + "scripts content is empty");
+            throw new TerraformExecutorException(
+                    "terraform scripts create error, terraform " + "scripts content is empty");
         }
         File scriptFile = new File(taskWorkspace, TF_SCRIPT_FILE_NAME);
         boolean overwrite = scriptFile.exists();
@@ -174,7 +169,6 @@ public class TerraformScriptsHelper {
         return state;
     }
 
-
     /**
      * Get the list of files in the workspace for the Terraform deployment task.
      *
@@ -187,11 +181,13 @@ public class TerraformScriptsHelper {
         if (workPath.isDirectory() && workPath.exists()) {
             File[] files = workPath.listFiles();
             if (Objects.nonNull(files)) {
-                Arrays.stream(files).forEach(file -> {
-                    if (file.isFile()) {
-                        scriptFiles.add(file);
-                    }
-                });
+                Arrays.stream(files)
+                        .forEach(
+                                file -> {
+                                    if (file.isFile()) {
+                                        scriptFiles.add(file);
+                                    }
+                                });
             }
         }
         return scriptFiles;
@@ -202,23 +198,26 @@ public class TerraformScriptsHelper {
      * deployment task.
      *
      * @param taskWorkspace workspace path for the Terraform deployment task.
-     * @param scriptFiles   List of script files.
+     * @param scriptFiles List of script files.
      * @return Map of file name and file content.
      */
-    public Map<String, String> getDeploymentGeneratedFilesContent(String taskWorkspace,
-                                                                  List<File> scriptFiles) {
+    public Map<String, String> getDeploymentGeneratedFilesContent(
+            String taskWorkspace, List<File> scriptFiles) {
         Map<String, String> fileContentMap = new HashMap<>();
         File workPath = new File(taskWorkspace);
         if (workPath.isDirectory() && workPath.exists()) {
             File[] files = workPath.listFiles();
             if (Objects.nonNull(files)) {
-                Arrays.stream(files).forEach(file -> {
-                    if (file.isFile() && !isExcludedFile(file.getName())
-                            && !scriptFiles.contains(file)) {
-                        String content = readFileContentAndDelete(file);
-                        fileContentMap.put(file.getName(), content);
-                    }
-                });
+                Arrays.stream(files)
+                        .forEach(
+                                file -> {
+                                    if (file.isFile()
+                                            && !isExcludedFile(file.getName())
+                                            && !scriptFiles.contains(file)) {
+                                        String content = readFileContentAndDelete(file);
+                                        fileContentMap.put(file.getName(), content);
+                                    }
+                                });
             }
         }
         return fileContentMap;
@@ -229,14 +228,15 @@ public class TerraformScriptsHelper {
         try {
             fileContent = Files.readString(file.toPath());
             boolean deleted = Files.deleteIfExists(file.toPath());
-            log.info("Read file content with name:{} successfully. Delete result：{}",
-                    file.getName(), deleted);
+            log.info(
+                    "Read file content with name:{} successfully. Delete result：{}",
+                    file.getName(),
+                    deleted);
         } catch (IOException e) {
             log.error("Read file content with name:{} error.", file.getName(), e);
         }
         return fileContent;
     }
-
 
     /**
      * Delete the workspace of the Terraform deployment task.
@@ -248,17 +248,21 @@ public class TerraformScriptsHelper {
 
             Path path = Paths.get(taskWorkspace).toAbsolutePath().normalize();
             try (Stream<Path> pathStream = Files.walk(path)) {
-                pathStream.sorted(Comparator.reverseOrder()).map(Path::toFile)
-                        .forEach(file -> {
-                            if (!file.delete()) {
-                                log.warn("Failed to delete file {}.", file.getAbsolutePath());
-                            }
-                        });
+                pathStream
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(
+                                file -> {
+                                    if (!file.delete()) {
+                                        log.warn(
+                                                "Failed to delete file {}.",
+                                                file.getAbsolutePath());
+                                    }
+                                });
             } catch (IOException e) {
                 log.error("Delete task workspace:{} error", taskWorkspace, e);
             }
         }
-
     }
 
     private boolean isExcludedFile(String fileName) {
@@ -268,6 +272,7 @@ public class TerraformScriptsHelper {
 
     private String getModuleParentDirectoryPath() {
         return StringUtils.isNotBlank(moduleParentDirectoryPath)
-                ? moduleParentDirectoryPath : System.getProperty("java.io.tmpdir");
+                ? moduleParentDirectoryPath
+                : System.getProperty("java.io.tmpdir");
     }
 }

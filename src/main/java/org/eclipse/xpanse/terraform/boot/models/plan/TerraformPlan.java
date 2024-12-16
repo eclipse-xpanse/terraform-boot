@@ -10,9 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
-/**
- * Data model to represent terraform plan output.
- */
+/** Data model to represent terraform plan output. */
 @Data
 @Builder
 public class TerraformPlan {

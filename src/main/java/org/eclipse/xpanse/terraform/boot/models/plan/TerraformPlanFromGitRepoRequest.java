@@ -10,9 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.git.TerraformScriptGitRepoDetails;
 
-/**
- * Data model for the generating terraform plan using Terraform scripts from a GIT repo.
- */
+/** Data model for the generating terraform plan using Terraform scripts from a GIT repo. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformPlanFromGitRepoRequest extends TerraformPlanFromDirectoryRequest {

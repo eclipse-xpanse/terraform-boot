@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-/**
- * Terraform service classes are manage task result.
- */
+/** Terraform service classes are manage task result. */
 @Slf4j
 @Component
 public class TerraformResultPersistenceManage {
@@ -35,10 +33,8 @@ public class TerraformResultPersistenceManage {
     @Value("${clean.workspace.after.deployment.enabled:true}")
     private Boolean cleanWorkspaceAfterDeployment;
 
-    @Resource
-    private TerraformScriptsHelper scriptsHelper;
-    @Resource
-    private TerraformResultSerializer terraformResultSerializer;
+    @Resource private TerraformScriptsHelper scriptsHelper;
+    @Resource private TerraformResultSerializer terraformResultSerializer;
 
     /**
      * When the terraform-boot callback fails, store the TerraformResult in the local file system.
@@ -53,14 +49,21 @@ public class TerraformResultPersistenceManage {
             return;
         }
         byte[] terraformResultData = terraformResultSerializer.serialize(result);
-        try (FileOutputStream fos = new FileOutputStream(file.getPath() + File.separator
-                        + result.getRequestId() + TF_RESULT_FILE_SUFFIX)) {
+        try (FileOutputStream fos =
+                new FileOutputStream(
+                        file.getPath()
+                                + File.separator
+                                + result.getRequestId()
+                                + TF_RESULT_FILE_SUFFIX)) {
             fos.write(terraformResultData);
-            log.info("terraform result successfully stored to directoryName: {}",
+            log.info(
+                    "terraform result successfully stored to directoryName: {}",
                     result.getRequestId());
         } catch (IOException e) {
-            String errorMsg = String.format("storing terraform result to "
-                            + "directoryName %s failed. %s", result.getRequestId(), e);
+            String errorMsg =
+                    String.format(
+                            "storing terraform result to " + "directoryName %s failed. %s",
+                            result.getRequestId(), e);
             log.error(errorMsg);
         }
     }
@@ -83,8 +86,8 @@ public class TerraformResultPersistenceManage {
         }
         try (FileInputStream fis = new FileInputStream(resultFile)) {
             byte[] terraformResultData = fis.readAllBytes();
-            TerraformResult terraformResult = terraformResultSerializer
-                    .deserialize(terraformResultData);
+            TerraformResult terraformResult =
+                    terraformResultSerializer.deserialize(terraformResultData);
             fis.close();
             deleteResultFileAndDirectory(new File(filePath));
             return ResponseEntity.ok(terraformResult);
@@ -132,5 +135,4 @@ public class TerraformResultPersistenceManage {
     private String getFilePath(UUID requestId) {
         return failedCallbackStoreLocation + File.separator + requestId.toString();
     }
-
 }

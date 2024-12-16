@@ -12,9 +12,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.directory.TerraformDeployFromDirectoryRequest;
 
-/**
- * Terraform uses the request object deployed by the script.
- */
+/** Terraform uses the request object deployed by the script. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformDeployWithScriptsRequest extends TerraformDeployFromDirectoryRequest {
@@ -22,5 +20,4 @@ public class TerraformDeployWithScriptsRequest extends TerraformDeployFromDirect
     @NotNull
     @Schema(description = "List of Terraform script files to be considered for deploying changes.")
     private List<String> scripts;
-
 }

@@ -23,28 +23,32 @@ import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorExce
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
-/**
- * Executes operating system commands.
- */
+/** Executes operating system commands. */
 @Slf4j
 @Component
 public class SystemCmd {
 
-    public SystemCmdResult execute(String cmd, String workspace, boolean isCommandOutputToBeLogged,
-                                   Map<String, String> envVariables) {
+    public SystemCmdResult execute(
+            String cmd,
+            String workspace,
+            boolean isCommandOutputToBeLogged,
+            Map<String, String> envVariables) {
         return execute(cmd, 0, workspace, isCommandOutputToBeLogged, envVariables);
     }
 
     /**
      * Executes operating system command.
      *
-     * @param cmd        command to be executed.
+     * @param cmd command to be executed.
      * @param waitSecond time to wait for the command to be completed.
      * @return returns SystemCmdResult object which has all the execution details.
      */
-    public SystemCmdResult execute(String cmd, int waitSecond, String workspace,
-                                   boolean isCommandOutputToBeLogged,
-                                   Map<String, String> envVariables) {
+    public SystemCmdResult execute(
+            String cmd,
+            int waitSecond,
+            String workspace,
+            boolean isCommandOutputToBeLogged,
+            Map<String, String> envVariables) {
         SystemCmdResult systemCmdResult = new SystemCmdResult();
         systemCmdResult.setCommandExecuted(cmd);
         log.info("SystemCmd executing cmd: " + String.join(" ", cmd));
@@ -67,8 +71,8 @@ public class SystemCmd {
                 }
             }
             if (process.exitValue() != 0) {
-                log.error("SystemCmd process finished with abnormal value {}.",
-                        process.exitValue());
+                log.error(
+                        "SystemCmd process finished with abnormal value {}.", process.exitValue());
                 systemCmdResult.setCommandSuccessful(false);
             } else {
                 systemCmdResult.setCommandSuccessful(true);
@@ -91,34 +95,40 @@ public class SystemCmd {
         return systemCmdResult;
     }
 
-    private String readStream(BufferedReader bufferedReader, Map<String, String> contextMap,
-                              boolean isCommandOutputToBeLogged) {
-        //copying MDC context of the main deployment thread to the stream reader thread.
+    private String readStream(
+            BufferedReader bufferedReader,
+            Map<String, String> contextMap,
+            boolean isCommandOutputToBeLogged) {
+        // copying MDC context of the main deployment thread to the stream reader thread.
         MDC.setContextMap(contextMap);
         StringBuilder stringBuilder = new StringBuilder();
-        bufferedReader.lines().forEach(line -> {
-            if (isCommandOutputToBeLogged) {
-                log.info(line);
-            }
-            // skip adding new line for the first line.
-            if (!stringBuilder.isEmpty()) {
-                stringBuilder.append(System.lineSeparator());
-            }
-            stringBuilder.append(line);
-        });
+        bufferedReader
+                .lines()
+                .forEach(
+                        line -> {
+                            if (isCommandOutputToBeLogged) {
+                                log.info(line);
+                            }
+                            // skip adding new line for the first line.
+                            if (!stringBuilder.isEmpty()) {
+                                stringBuilder.append(System.lineSeparator());
+                            }
+                            stringBuilder.append(line);
+                        });
         return stringBuilder.toString();
     }
 
-    private void readProcessOutput(Process process, SystemCmdResult systemCmdResult,
-                                   boolean isCommandOutputToBeLogged)
+    private void readProcessOutput(
+            Process process, SystemCmdResult systemCmdResult, boolean isCommandOutputToBeLogged)
             throws IOException, ExecutionException, InterruptedException {
         if (Objects.isNull(process)) {
             return;
         }
-        final Map<String, String> contextMap = new HashMap<>(
-                Objects.nonNull(MDC.getCopyOfContextMap()) ? MDC.getCopyOfContextMap()
-                        : new HashMap<>());
-
+        final Map<String, String> contextMap =
+                new HashMap<>(
+                        Objects.nonNull(MDC.getCopyOfContextMap())
+                                ? MDC.getCopyOfContextMap()
+                                : new HashMap<>());
 
         // Starting threads in parallel to read stdout and stderr. This is needed because in
         // some cases reading stdout first works and in some cases reading stderr first works.
@@ -136,9 +146,13 @@ public class SystemCmd {
                     new BufferedReader(new InputStreamReader(process.getErrorStream()));
             Future<String> stdErrFuture;
             try (ExecutorService threadToReadStdErr = newSingleThreadExecutor()) {
-                stdErrFuture = threadToReadStdErr.submit(
-                        () -> readStream(stdErrorReader, contextMap,
-                                isCommandOutputToBeLogged));
+                stdErrFuture =
+                        threadToReadStdErr.submit(
+                                () ->
+                                        readStream(
+                                                stdErrorReader,
+                                                contextMap,
+                                                isCommandOutputToBeLogged));
 
                 int count = 0;
                 while (!stdOutFuture.isDone() || !stdErrFuture.isDone()) {
@@ -153,7 +167,5 @@ public class SystemCmd {
                 threadToReadStdErr.shutdown();
             }
         }
-
     }
-
 }

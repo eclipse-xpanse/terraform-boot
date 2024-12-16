@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * REST controller for admin services of terraform-boot.
- */
+/** REST controller for admin services of terraform-boot. */
 @Slf4j
 @CrossOrigin
 @RestController
@@ -34,7 +32,7 @@ public class TerraformBootAdminApi {
     @Autowired
     public TerraformBootAdminApi(
             @Qualifier("terraformDirectoryService")
-            TerraformDirectoryService terraformDirectoryService) {
+                    TerraformDirectoryService terraformDirectoryService) {
         this.terraformDirectoryService = terraformDirectoryService;
     }
 
@@ -43,13 +41,11 @@ public class TerraformBootAdminApi {
      *
      * @return Returns the current state of the system.
      */
-    @Tag(name = "Admin", description =
-            "Admin services for managing the application.")
+    @Tag(name = "Admin", description = "Admin services for managing the application.")
     @Operation(description = "Check health of Terraform Boot API service")
     @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public TerraformBootSystemStatus healthCheck() {
         return terraformDirectoryService.tfHealthCheck();
     }
-
 }

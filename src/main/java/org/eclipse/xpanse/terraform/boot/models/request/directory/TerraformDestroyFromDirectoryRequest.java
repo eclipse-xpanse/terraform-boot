@@ -17,9 +17,7 @@ import java.util.UUID;
 import lombok.Data;
 import org.eclipse.xpanse.terraform.boot.terraform.tool.TerraformVersionsHelper;
 
-/**
- * Data model for the terraform destroy requests.
- */
+/** Data model for the terraform destroy requests. */
 @Data
 public class TerraformDestroyFromDirectoryRequest {
 
@@ -33,11 +31,17 @@ public class TerraformDestroyFromDirectoryRequest {
     private String terraformVersion;
 
     @NotNull
-    @Schema(description = "Key-value pairs of regular variables that must be used to execute the "
-            + "Terraform request.", additionalProperties = TRUE)
+    @Schema(
+            description =
+                    "Key-value pairs of regular variables that must be used to execute the "
+                            + "Terraform request.",
+            additionalProperties = TRUE)
     private Map<String, Object> variables;
 
-    @Schema(description = "Key-value pairs of variables that must be injected as environment "
-            + "variables to terraform process.", additionalProperties = TRUE)
+    @Schema(
+            description =
+                    "Key-value pairs of variables that must be injected as environment "
+                            + "variables to terraform process.",
+            additionalProperties = TRUE)
     private Map<String, String> envVariables = new HashMap<>();
 }

@@ -11,9 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.eclipse.xpanse.terraform.boot.models.request.webhook.WebhookConfig;
 
-/**
- * Data model for terraform async destroy requests using scripts from a GIT Repo.
- */
+/** Data model for terraform async destroy requests using scripts from a GIT Repo. */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TerraformAsyncDestroyFromGitRepoRequest extends TerraformDestroyFromGitRepoRequest {
@@ -21,5 +19,4 @@ public class TerraformAsyncDestroyFromGitRepoRequest extends TerraformDestroyFro
     @NotNull
     @Schema(description = "Configuration information of webhook.")
     private WebhookConfig webhookConfig;
-
 }

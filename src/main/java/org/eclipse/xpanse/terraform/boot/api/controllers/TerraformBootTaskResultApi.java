@@ -22,30 +22,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * REST controller for manage the task form terraform-boot.
- */
+/** REST controller for manage the task form terraform-boot. */
 @Slf4j
 @CrossOrigin
 @RestController
 @RequestMapping("/terraform-boot/task")
 public class TerraformBootTaskResultApi {
 
-    @Resource
-    private TerraformResultPersistenceManage terraformResultPersistenceManage;
+    @Resource private TerraformResultPersistenceManage terraformResultPersistenceManage;
 
-    @Tag(name = "RetrieveTerraformResult", description =
-            "APIs for manage the task form terraform-boot.")
-    @Operation(description = "Method to retrieve stored terraform result in case terraform-boot "
-            + "receives a failure while sending the terraform result via callback.")
-    @GetMapping(value = "/result/{requestId}", produces =
-            MediaType.APPLICATION_JSON_VALUE)
+    @Tag(
+            name = "RetrieveTerraformResult",
+            description = "APIs for manage the task form terraform-boot.")
+    @Operation(
+            description =
+                    "Method to retrieve stored terraform result in case terraform-boot "
+                            + "receives a failure while sending the terraform result via callback.")
+    @GetMapping(value = "/result/{requestId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<TerraformResult> getStoredTaskResultByRequestId(
-            @Parameter(name = "requestId",
-                    description = "id of the request")
-            @PathVariable("requestId") String requestId) {
+            @Parameter(name = "requestId", description = "id of the request")
+                    @PathVariable("requestId")
+                    String requestId) {
         return terraformResultPersistenceManage.retrieveTerraformResultByRequestId(requestId);
     }
-
 }
