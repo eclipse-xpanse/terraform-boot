@@ -11,6 +11,7 @@ import jakarta.annotation.Resource;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
@@ -42,12 +43,13 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @Service
 public class TerraformDirectoryService {
+    private static final String HELLO_WORLD_TF_NAME = "hello_world.tf";
     private static final String HELLO_WORLD_TEMPLATE =
             """
-            output "hello_world" {
-                value = "Hello, World!"
-            }
-            """;
+                    output "hello_world" {
+                        value = "Hello, World!"
+                    }
+                    """;
     @Resource private TerraformExecutor executor;
     @Resource private TerraformInstaller installer;
     @Resource private RestTemplate restTemplate;
@@ -63,7 +65,7 @@ public class TerraformDirectoryService {
     public TerraformBootSystemStatus tfHealthCheck() {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(UUID.randomUUID().toString());
         scriptsHelper.prepareDeploymentFilesWithScripts(
-                taskWorkspace, List.of(HELLO_WORLD_TEMPLATE), null);
+                taskWorkspace, Map.of(HELLO_WORLD_TF_NAME, HELLO_WORLD_TEMPLATE), null);
         TerraformValidationResult terraformValidationResult =
                 tfValidateFromDirectory(taskWorkspace, null);
         TerraformBootSystemStatus systemStatus = new TerraformBootSystemStatus();
@@ -315,7 +317,8 @@ public class TerraformDirectoryService {
 
     private TerraformResult transSystemCmdResultToTerraformResult(
             SystemCmdResult result, String taskWorkspace, List<File> scriptFiles) {
-        TerraformResult terraformResult = TerraformResult.builder().build();
+        TerraformResult terraformResult =
+                TerraformResult.builder().isCommandSuccessful(result.isCommandSuccessful()).build();
         BeanUtils.copyProperties(result, terraformResult);
         terraformResult.setTerraformState(scriptsHelper.getTerraformState(taskWorkspace));
         terraformResult.setGeneratedFileContentMap(
