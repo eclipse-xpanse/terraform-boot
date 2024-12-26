@@ -41,7 +41,8 @@ public class TerraformScriptsService {
     public TerraformValidationResult validateWithScripts(
             TerraformDeployWithScriptsRequest request) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(UUID.randomUUID().toString());
-        scriptsHelper.prepareDeploymentFilesWithScripts(taskWorkspace, request.getScripts(), null);
+        scriptsHelper.prepareDeploymentFilesWithScripts(
+                taskWorkspace, request.getScriptFiles(), null);
         return directoryService.tfValidateFromDirectory(
                 taskWorkspace, request.getTerraformVersion());
     }
@@ -51,7 +52,7 @@ public class TerraformScriptsService {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
         List<File> files =
                 scriptsHelper.prepareDeploymentFilesWithScripts(
-                        taskWorkspace, request.getScripts(), null);
+                        taskWorkspace, request.getScriptFiles(), null);
         return directoryService.deployFromDirectory(request, taskWorkspace, files);
     }
 
@@ -60,7 +61,7 @@ public class TerraformScriptsService {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
         List<File> files =
                 scriptsHelper.prepareDeploymentFilesWithScripts(
-                        taskWorkspace, request.getScripts(), request.getTfState());
+                        taskWorkspace, request.getScriptFiles(), request.getTfState());
         return directoryService.modifyFromDirectory(request, taskWorkspace, files);
     }
 
@@ -70,7 +71,7 @@ public class TerraformScriptsService {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
         List<File> files =
                 scriptsHelper.prepareDeploymentFilesWithScripts(
-                        taskWorkspace, request.getScripts(), request.getTfState());
+                        taskWorkspace, request.getScriptFiles(), request.getTfState());
         return directoryService.destroyFromDirectory(request, taskWorkspace, files);
     }
 
@@ -78,7 +79,8 @@ public class TerraformScriptsService {
     public TerraformPlan getTerraformPlanFromScripts(
             TerraformPlanWithScriptsRequest request, UUID uuid) {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(uuid.toString());
-        scriptsHelper.prepareDeploymentFilesWithScripts(taskWorkspace, request.getScripts(), null);
+        scriptsHelper.prepareDeploymentFilesWithScripts(
+                taskWorkspace, request.getScriptFiles(), null);
         return directoryService.getTerraformPlanFromDirectory(request, uuid.toString());
     }
 

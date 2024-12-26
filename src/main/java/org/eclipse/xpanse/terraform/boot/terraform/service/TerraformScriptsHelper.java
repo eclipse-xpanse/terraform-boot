@@ -34,7 +34,6 @@ import org.springframework.util.CollectionUtils;
 public class TerraformScriptsHelper {
 
     public static final String TF_SCRIPT_FILE_EXTENSION = ".tf";
-    private static final String TF_SCRIPT_FILE_NAME = "resource.tf";
     private static final String TF_STATE_FILE_NAME = "terraform.tfstate";
     private static final List<String> EXCLUDED_FILE_SUFFIX_LIST =
             Arrays.asList(".tf", ".tfstate", ".hcl");
@@ -88,20 +87,19 @@ public class TerraformScriptsHelper {
      * Prepare deployment files with scripts in the workspace for the Terraform deployment task.
      *
      * @param taskWorkspace workspace path for the Terraform deployment task.
-     * @param scripts list of script contents as string.
+     * @param scriptsMap map of script name and script content.
      * @param tfState tfState file contents as string.
      * @return list of script files.
      */
     public List<File> prepareDeploymentFilesWithScripts(
-            String taskWorkspace, List<String> scripts, String tfState) {
-        File scriptFile = buildScriptFiles(taskWorkspace, scripts);
-        List<File> scriptFiles = new ArrayList<>();
-        scriptFiles.add(scriptFile);
+            String taskWorkspace, Map<String, String> scriptsMap, String tfState) {
+        List<File> scriptFiles = buildScriptFiles(taskWorkspace, scriptsMap);
+        List<File> files = new ArrayList<>(scriptFiles);
         if (StringUtils.isNotBlank(tfState)) {
             File tfStateFile = createTfStateFile(taskWorkspace, tfState);
-            scriptFiles.add(tfStateFile);
+            files.add(tfStateFile);
         }
-        return scriptFiles;
+        return files;
     }
 
     /**
@@ -124,29 +122,38 @@ public class TerraformScriptsHelper {
         return projectFiles;
     }
 
-    private File buildScriptFiles(String taskWorkspace, List<String> scripts) {
-        log.info("start build terraform script");
-        if (CollectionUtils.isEmpty(scripts)) {
+    private List<File> buildScriptFiles(String taskWorkspace, Map<String, String> scriptsMap) {
+        log.info("start build Terraform script");
+        if (Objects.isNull(scriptsMap) || scriptsMap.isEmpty()) {
             throw new TerraformExecutorException(
-                    "terraform scripts create error, terraform " + "scripts not exists");
+                    "Terraform scripts create error, script files is empty.");
         }
-        StringBuilder scriptBuilder = new StringBuilder();
-        for (String script : scripts) {
-            scriptBuilder.append(script).append(System.lineSeparator());
+        List<File> scriptFiles = new ArrayList<>();
+        for (Map.Entry<String, String> scriptEntry : scriptsMap.entrySet()) {
+            String scriptName = scriptEntry.getKey();
+            String scriptContent = scriptEntry.getValue();
+            if (StringUtils.isNotBlank(scriptName) && StringUtils.isNotBlank(scriptContent)) {
+                File scriptFile = createScriptFile(taskWorkspace, scriptName, scriptContent);
+                scriptFiles.add(scriptFile);
+            }
         }
-        if (scriptBuilder.isEmpty()) {
+        if (CollectionUtils.isEmpty(scriptFiles)) {
             throw new TerraformExecutorException(
-                    "terraform scripts create error, terraform " + "scripts content is empty");
+                    "Terraform scripts create error, all scripts is empty.");
         }
-        File scriptFile = new File(taskWorkspace, TF_SCRIPT_FILE_NAME);
+        return scriptFiles;
+    }
+
+    private File createScriptFile(String taskWorkspace, String scriptName, String scriptContent) {
+        File scriptFile = new File(taskWorkspace, scriptName);
         boolean overwrite = scriptFile.exists();
         try (FileWriter scriptWriter = new FileWriter(scriptFile, overwrite)) {
-            scriptWriter.write(scriptBuilder.toString());
-            log.info("terraform script create success, fileName: {}", scriptFile.getAbsolutePath());
+            scriptWriter.write(scriptContent);
+            log.info("Terraform script create success, fileName: {}", scriptFile.getAbsolutePath());
             return scriptFile;
         } catch (IOException ex) {
-            log.error("terraform script create failed.", ex);
-            throw new TerraformExecutorException("terraform script create failed.", ex);
+            log.error("Terraform script create failed.", ex);
+            throw new TerraformExecutorException("Terraform script create failed.", ex);
         }
     }
 
