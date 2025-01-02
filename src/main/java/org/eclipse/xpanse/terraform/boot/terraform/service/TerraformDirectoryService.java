@@ -319,10 +319,14 @@ public class TerraformDirectoryService {
             SystemCmdResult result, String taskWorkspace, List<File> scriptFiles) {
         TerraformResult terraformResult =
                 TerraformResult.builder().isCommandSuccessful(result.isCommandSuccessful()).build();
-        BeanUtils.copyProperties(result, terraformResult);
-        terraformResult.setTerraformState(scriptsHelper.getTerraformState(taskWorkspace));
-        terraformResult.setGeneratedFileContentMap(
-                scriptsHelper.getDeploymentGeneratedFilesContent(taskWorkspace, scriptFiles));
+        try {
+            BeanUtils.copyProperties(result, terraformResult);
+            terraformResult.setTerraformState(scriptsHelper.getTerraformState(taskWorkspace));
+            terraformResult.setGeneratedFileContentMap(
+                    scriptsHelper.getDeploymentGeneratedFilesContent(taskWorkspace, scriptFiles));
+        } catch (Exception e) {
+            log.error("Failed to get terraform state and generated files content.", e);
+        }
         return terraformResult;
     }
 }

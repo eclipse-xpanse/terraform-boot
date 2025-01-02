@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,8 +72,12 @@ public class TerraformVersionsHelper {
         if (!installDir.exists() || !installDir.isDirectory()) {
             return null;
         }
+        File[] terraformExecutors = installDir.listFiles();
+        if (Objects.isNull(terraformExecutors) || terraformExecutors.length == 0) {
+            return null;
+        }
         Map<String, File> executorVersionFileMap = new HashMap<>();
-        Arrays.stream(installDir.listFiles())
+        Arrays.stream(terraformExecutors)
                 .filter(
                         f ->
                                 f.isFile()
@@ -194,10 +199,12 @@ public class TerraformVersionsHelper {
      */
     public String getExactVersionOfExecutor(String executorPath) {
         String versionOutput = getVersionCommandOutput(executorPath);
-        Matcher matcher = TERRAFORM_VERSION_OUTPUT_PATTERN.matcher(versionOutput);
-        if (matcher.find()) {
-            // return only the version number.
-            return matcher.group(1);
+        if (StringUtils.isNotBlank(versionOutput)) {
+            Matcher matcher = TERRAFORM_VERSION_OUTPUT_PATTERN.matcher(versionOutput);
+            if (matcher.find()) {
+                // return only the version number.
+                return matcher.group(1);
+            }
         }
         return null;
     }
