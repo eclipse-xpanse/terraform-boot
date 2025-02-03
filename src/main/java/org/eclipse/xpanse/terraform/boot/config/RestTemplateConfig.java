@@ -5,6 +5,9 @@
 
 package org.eclipse.xpanse.terraform.boot.config;
 
+import jakarta.annotation.Resource;
+import java.util.Collections;
+import org.eclipse.xpanse.terraform.boot.logging.RestTemplateLoggingInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -15,10 +18,14 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestTemplateConfig {
 
+    @Resource RestTemplateLoggingInterceptor restTemplateLoggingInterceptor;
+
     /** Create RestTemplate to IOC. */
     @Bean
     public RestTemplate restTemplate(ClientHttpRequestFactory factory) {
-        return new RestTemplate(factory);
+        RestTemplate restTemplate = new RestTemplate(factory);
+        restTemplate.setInterceptors(Collections.singletonList(restTemplateLoggingInterceptor));
+        return restTemplate;
     }
 
     /** Create ClientHttpRequestFactory to IOC. */
