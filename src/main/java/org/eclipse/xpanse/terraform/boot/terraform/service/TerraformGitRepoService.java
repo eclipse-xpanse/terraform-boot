@@ -177,6 +177,7 @@ public class TerraformGitRepoService {
         try {
             restTemplate.postForLocation(url, result);
         } catch (RestClientException e) {
+            log.error("error while sending terraform result", e);
             terraformResultPersistenceManage.persistTerraformResult(result);
         }
     }
