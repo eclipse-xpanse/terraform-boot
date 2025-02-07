@@ -46,6 +46,8 @@ public class RestTemplateLoggingInterceptor implements ClientHttpRequestIntercep
             requestResult.append(' ');
             requestResult.append(request.getURI());
             requestResult.append(' ');
+            requestResult.append(request.getHeaders());
+            requestResult.append(' ');
             writeBody(requestBody, requestResult);
             log.info(requestResult.toString());
         }
