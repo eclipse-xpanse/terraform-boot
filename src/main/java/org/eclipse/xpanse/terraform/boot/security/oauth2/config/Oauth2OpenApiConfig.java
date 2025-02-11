@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Profile;
         info =
                 @Info(
                         title = "Terraform-Boot API",
-                        description = "RESTful Services to interact with Terraform-Boot runtime",
+                        description = "RESTful Services to interact with terraform CLI",
                         version = "${app.version}"),
         security =
                 @SecurityRequirement(

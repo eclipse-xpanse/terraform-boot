@@ -25,21 +25,19 @@ public class TerraformPlanFromDirectoryRequest {
     @NotNull
     @NotBlank
     @Pattern(regexp = TerraformVersionsHelper.TERRAFORM_REQUIRED_VERSION_REGEX)
-    @Schema(description = "The required version of the terraform which will execute the scripts.")
+    @Schema(description = "The required version of terraform which will execute the scripts.")
     private String terraformVersion;
 
     @NotNull
     @Schema(
             description =
                     "Key-value pairs of variables that must be used to execute the "
-                            + "Terraform request.",
-            additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
+                            + "Terraform request.")
     private Map<String, Object> variables;
 
     @Schema(
             description =
                     "Key-value pairs of variables that must be injected as environment "
-                            + "variables to terraform process.",
-            additionalProperties = Schema.AdditionalPropertiesValue.TRUE)
+                            + "variables to terraform process.")
     private Map<String, String> envVariables = new HashMap<>();
 }
