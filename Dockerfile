@@ -1,6 +1,6 @@
 FROM eclipse-temurin:21-jre-alpine
 
-RUN addgroup -S terraform-boot && adduser -S -G terraform-boot terraform-boot
+RUN addgroup -S terra-boot && adduser -S -G terra-boot terra-boot
 RUN apk update && \
     apk add --no-cache unzip wget
 
@@ -12,6 +12,6 @@ RUN chmod +x /install_terraform.sh
 RUN echo "Downloading and installing Terraform with multiple versions $TERRAFORM_VERSIONS into path $TERRAFORM_INSTALL_PATH"; \
     /install_terraform.sh "$TERRAFORM_INSTALL_PATH" "$DEFAULT_TERRAFORM_VERSION" "$TERRAFORM_VERSIONS"
 
-COPY target/terraform-boot-*.jar terraform-boot.jar
-USER terraform-boot
-ENTRYPOINT ["java", "-Dterraform.install.dir=${TERRAFORM_INSTALL_PATH}", "-Dterraform.default.supported.versions=${TERRAFORM_VERSIONS}", "-jar", "terraform-boot.jar"]
+COPY target/terra-boot-*.jar terra-boot.jar
+USER terra-boot
+ENTRYPOINT ["java", "-Dterraform.install.dir=${TERRAFORM_INSTALL_PATH}", "-Dterraform.default.supported.versions=${TERRAFORM_VERSIONS}", "-jar", "terra-boot.jar"]

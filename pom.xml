@@ -14,9 +14,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.eclipse.xpanse.terraform.boot</groupId>
-	<artifactId>terraform-boot</artifactId>
+	<artifactId>terra-boot</artifactId>
 	<version>1.0.19-SNAPSHOT</version>
-	<name>terraform-boot</name>
+	<name>terra-boot</name>
 	<description>RESTful API Wrapper for Terraform</description>
 	<properties>
 		<java.version>21</java.version>

@@ -50,8 +50,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @CrossOrigin
 @RestController
-@RequestMapping("/terraform-boot/directory")
-public class TerraformBootFromDirectoryApi {
+@RequestMapping("/terra-boot/directory")
+public class TerraBootFromDirectoryApi {
 
     @Resource private TerraformDirectoryService directoryService;
     @Resource private TerraformScriptsHelper scriptsHelper;

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 /** Interceptor to automatically add HMAC signature headers. */
 @Component
 @ConditionalOnProperty(
-        name = "terraformboot.webhook.hmac.request.signing.enabled",
+        name = "terraboot.webhook.hmac.request.signing.enabled",
         havingValue = "true",
         matchIfMissing = true)
 public class HmacSignatureHeaderInterceptor implements ClientHttpRequestInterceptor {

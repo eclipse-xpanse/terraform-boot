@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Profile;
 @OpenAPIDefinition(
         info =
                 @Info(
-                        title = "Terraform-Boot API",
+                        title = "Terra-Boot API",
                         description = "RESTful Services to interact with terraform CLI",
                         version = "${app.version}"),
         security =

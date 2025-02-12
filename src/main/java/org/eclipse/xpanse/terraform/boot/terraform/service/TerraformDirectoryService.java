@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.xpanse.terraform.boot.async.TaskConfiguration;
-import org.eclipse.xpanse.terraform.boot.models.TerraformBootSystemStatus;
+import org.eclipse.xpanse.terraform.boot.models.TerraBootSystemStatus;
 import org.eclipse.xpanse.terraform.boot.models.enums.HealthStatus;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.InvalidTerraformToolException;
 import org.eclipse.xpanse.terraform.boot.models.exceptions.TerraformExecutorException;
@@ -58,17 +58,17 @@ public class TerraformDirectoryService {
     @Resource private TerraformResultPersistenceManage terraformResultPersistenceManage;
 
     /**
-     * Perform Terraform health checks by creating a Terraform test configuration file.
+     * Perform Terra-Boot health checks by creating a Terraform test configuration file.
      *
-     * @return TerraformBootSystemStatus.
+     * @return TerraBootSystemStatus.
      */
-    public TerraformBootSystemStatus tfHealthCheck() {
+    public TerraBootSystemStatus tfHealthCheck() {
         String taskWorkspace = scriptsHelper.buildTaskWorkspace(UUID.randomUUID().toString());
         scriptsHelper.prepareDeploymentFilesWithScripts(
                 taskWorkspace, Map.of(HELLO_WORLD_TF_NAME, HELLO_WORLD_TEMPLATE), null);
         TerraformValidationResult terraformValidationResult =
                 tfValidateFromDirectory(taskWorkspace, null);
-        TerraformBootSystemStatus systemStatus = new TerraformBootSystemStatus();
+        TerraBootSystemStatus systemStatus = new TerraBootSystemStatus();
         if (terraformValidationResult.isValid()) {
             systemStatus.setHealthStatus(HealthStatus.OK);
             return systemStatus;
