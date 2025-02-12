@@ -24,7 +24,7 @@ public class SpringDocOpenApiConfig {
         return new OpenAPI()
                 .info(
                         new Info()
-                                .title("Terraform-Boot API")
+                                .title("Terra-Boot API")
                                 .description("RESTful Services to interact with terraform CLI")
                                 .version(version));
     }

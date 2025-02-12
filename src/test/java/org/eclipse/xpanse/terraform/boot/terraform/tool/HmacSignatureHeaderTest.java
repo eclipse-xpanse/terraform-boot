@@ -13,8 +13,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(
         properties = {
-            "terraformboot.webhook.hmac.request.signing.key=1c30e4b1fad574f88572e25d0da03f34365f4ae92eda22bfd3a8c53cb5102f27",
-            "terraformboot.webhook.hmac.request.signing.algorithm=HmacSHA256",
+            "terraboot.webhook.hmac.request.signing.key=1c30e4b1fad574f88572e25d0da03f34365f4ae92eda22bfd3a8c53cb5102f27",
+            "terraboot.webhook.hmac.request.signing.algorithm=HmacSHA256",
         })
 @ContextConfiguration(classes = {HmacSignatureHeaderManage.class})
 public class HmacSignatureHeaderTest {

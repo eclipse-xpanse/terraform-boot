@@ -13,15 +13,15 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-/** Main entry class to terraform-boot. This class can be directly executed to start the server. */
+/** Main entry class to terra-boot. This class can be directly executed to start the server. */
 @EnableRetry
 @EnableAsync
 @EnableCaching
 @EnableScheduling
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
-public class TerraformBootApplication {
+public class TerraBootApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(TerraformBootApplication.class, args);
+        SpringApplication.run(TerraBootApplication.class, args);
     }
 }

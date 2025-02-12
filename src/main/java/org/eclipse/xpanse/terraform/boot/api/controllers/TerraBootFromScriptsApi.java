@@ -35,16 +35,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** API methods implemented by terraform-boot. */
+/** API methods implemented by terra-boot. */
 @Slf4j
 @CrossOrigin
 @RestController
-@RequestMapping("/terraform-boot/scripts/")
-public class TerraformBootFromScriptsApi {
+@RequestMapping("/terra-boot/scripts/")
+public class TerraBootFromScriptsApi {
 
     private final TerraformScriptsService terraformScriptsService;
 
-    public TerraformBootFromScriptsApi(TerraformScriptsService terraformScriptsService) {
+    public TerraBootFromScriptsApi(TerraformScriptsService terraformScriptsService) {
         this.terraformScriptsService = terraformScriptsService;
     }
 

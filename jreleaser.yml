@@ -1,5 +1,5 @@
 project:
-  name: eclipse-terraform-boot
+  name: eclipse-terra-boot
   license: Apache-2.0
   description: RESTful APIs for executing Terraform commands.
   links:
@@ -48,4 +48,4 @@ signing:
   armored: true
 files:
   artifacts:
-    - path: 'target/terraform-boot-{{projectEffectiveVersion}}.jar'
+    - path: 'target/terra-boot-{{projectEffectiveVersion}}.jar'

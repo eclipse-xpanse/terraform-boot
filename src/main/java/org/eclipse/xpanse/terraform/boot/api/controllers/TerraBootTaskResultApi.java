@@ -22,21 +22,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** REST controller for manage the task form terraform-boot. */
+/** REST controller for manage the task form terra-boot. */
 @Slf4j
 @CrossOrigin
 @RestController
-@RequestMapping("/terraform-boot/task")
-public class TerraformBootTaskResultApi {
+@RequestMapping("/terra-boot/task")
+public class TerraBootTaskResultApi {
 
     @Resource private TerraformResultPersistenceManage terraformResultPersistenceManage;
 
     @Tag(
             name = "RetrieveTerraformResult",
-            description = "APIs for manage the task form terraform-boot.")
+            description = "APIs for manage the task form terra-boot.")
     @Operation(
             description =
-                    "Method to retrieve stored terraform result in case terraform-boot "
+                    "Method to retrieve stored terraform result in case terra-boot "
                             + "receives a failure while sending the terraform result via callback.")
     @GetMapping(value = "/result/{requestId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)

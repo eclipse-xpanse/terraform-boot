@@ -37,7 +37,7 @@ public class TerraformResultPersistenceManage {
     @Resource private TerraformResultSerializer terraformResultSerializer;
 
     /**
-     * When the terraform-boot callback fails, store the TerraformResult in the local file system.
+     * When the terra-boot callback fails, store the TerraformResult in the local file system.
      *
      * @param result TerraformResult.
      */
@@ -69,7 +69,7 @@ public class TerraformResultPersistenceManage {
     }
 
     /**
-     * Get the TerraformResult object stored when the terraform-boot callback fails by RequestId.
+     * Get the TerraformResult object stored when the terra-boot callback fails by RequestId.
      *
      * @param requestId requestId.
      * @return TerraformResult.

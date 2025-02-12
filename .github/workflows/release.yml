@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: Huawei Inc.
 #
 ---
-name: terraform-boot-cd
+name: terra-boot-cd
 
 on:
   workflow_dispatch:
@@ -34,7 +34,7 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: github.repository == 'eclipse-xpanse/terraform-boot'
+    if: github.repository == 'eclipse-xpanse/terra-boot'
     outputs:
       next-version: ${{ steps.new_version.outputs.next-version }}
     permissions:
@@ -146,7 +146,7 @@ jobs:
 
   prepare-for-next-development-cycle:
     runs-on: ubuntu-latest
-    if: github.repository == 'eclipse-xpanse/terraform-boot'
+    if: github.repository == 'eclipse-xpanse/terra-boot'
     needs: release
     permissions:
       contents: write

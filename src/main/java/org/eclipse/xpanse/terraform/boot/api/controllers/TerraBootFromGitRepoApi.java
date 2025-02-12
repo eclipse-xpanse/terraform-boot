@@ -39,12 +39,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @CrossOrigin
 @RestController
-@RequestMapping("/terraform-boot/git")
-public class TerraformBootFromGitRepoApi {
+@RequestMapping("/terra-boot/git")
+public class TerraBootFromGitRepoApi {
 
     private final TerraformGitRepoService terraformGitRepoService;
 
-    public TerraformBootFromGitRepoApi(TerraformGitRepoService terraformGitRepoService) {
+    public TerraBootFromGitRepoApi(TerraformGitRepoService terraformGitRepoService) {
         this.terraformGitRepoService = terraformGitRepoService;
     }
 

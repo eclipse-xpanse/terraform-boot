@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Huawei Inc.
 #
-name: terraform-boot-ci
+name: terra-boot-ci
 
 # Run this workflow every time a new commit push to the repository
 on:

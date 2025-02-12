@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @ConditionalOnProperty(
-        name = "terraformboot.webhook.hmac.request.signing.enabled",
+        name = "terraboot.webhook.hmac.request.signing.enabled",
         havingValue = "true",
         matchIfMissing = true)
 public class HmacSignatureHeaderManage {
@@ -43,8 +43,8 @@ public class HmacSignatureHeaderManage {
     /** Constructor for HmacSignatureHeaderManage. */
     @Autowired
     public HmacSignatureHeaderManage(
-            @Value("${terraformboot.webhook.hmac.request.signing.key}") String hmacSecretKey,
-            @Value("${terraformboot.webhook.hmac.request.signing.algorithm}") String hmacAlgorithm)
+            @Value("${terraboot.webhook.hmac.request.signing.key}") String hmacSecretKey,
+            @Value("${terraboot.webhook.hmac.request.signing.algorithm}") String hmacAlgorithm)
             throws InvalidAlgorithmParameterException {
         validateAlgorithmName(hmacAlgorithm);
         this.hmacSecretKey = hmacSecretKey;
